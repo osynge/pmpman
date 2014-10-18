@@ -1,6 +1,7 @@
 # activate ceph-tagged partitions
 ACTION=="add", SUBSYSTEM=="block", \
   ENV{DEVTYPE}=="partition", \
-  RUN+="/usr/sbin/pmpman \
-  --database /var/lib/pmpman/devices.db \
+  RUN+="/usr/sbin/pmpman_udev.sh \
+  --database /var/lib/pmpman/database.db \
   --mark-udev /dev/$name"
+
