@@ -120,7 +120,7 @@ def updatdatabase(session=None):
             newUpdate.fk_update = id_update
             newUpdate.cmdln = "here is is"
             newUpdate.created = datetime.datetime.now()
-            newUpdate.uuid = uuid.uuid1()
+            newUpdate.uuid = str(uuid.uuid1())
             session.add(newUpdate)
             session.commit()
             

@@ -62,7 +62,6 @@ class ProcesHandler:
             self.UI = UI
         
     def connect_db(self):
-        print "connect_db" ,self.UI.defaults
         self.database = devices.database_model(self.UI.defaults['pmpman.rdms'])
         
     def cb_pmpman_action_udev(self,caller=None):
@@ -76,19 +75,20 @@ class ProcesHandler:
         self.log.debug("cb_pmpman_action_list")
         self.connect_db()
         session = self.database.Session()
-        lsblk.updatdatabase(session)
-        self.database.UpdateType_Add(update_type="lsblk",)
-        self.database.UpdateType_Add(update_type="udevadm_info")
-        self.database.UpdateType_Run()
-        self.database.Update_Run()
-        self.database.UpdateInstance_Run()
-        self.database.Update_Add(update_type="udevadm_info",
-           cammand_line = "" )
+        #lsblk.updatdatabase(session)
+        #self.database.UpdateType_Add(update_type="lsblk",)
+        #self.database.UpdateType_Add(update_type="udevadm_info")
+        #self.database.UpdateType_Run()
+        #self.database.Update_Run()
+        #self.database.UpdateInstance_Run()
+        #self.database.Update_Add(update_type="udevadm_info",
+        #   cammand_line = "" )
         
         self.database.Update_Run(update_type="lsblk")
         self.database.UpdateInstance_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
         QM.session = self.database.SessionFactory()
+        QM.initialise()
         QM.job_persist(job_type = "lsblk",
                 cmdln_template = "lsblk",
                 cmdln_paramters = "{}",
@@ -101,14 +101,27 @@ class ProcesHandler:
                 name = "kname_new",
                 session = session,
             )
-        available = QM.jobtype_available(job_type = "kname_new",
+            
+        QM.job_persist(job_type = "udev_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "kname_new",
                 session = session,
             )
-        QM.queue_dequeue()
+            
         
+            
+        
+        available = QM.jobtype_available(job_type = "kname_new",
+                cmdln_template = "udevadm info -q all -n /dev/%s",
+                cmdln_paramters = '[ "sdb" ]',
+                name = "udev_query",
+                session = session,
+            )
+            
+        
+        QM.queue_dequeue(session = session)
+
     def Connect(self):
         
         parmetes =  {

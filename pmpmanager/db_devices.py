@@ -46,7 +46,7 @@ class Update(Base):
     latest = Column(Integer,nullable = True)
     reocuring = Column(Integer,nullable = False)
     
-    frequency = Column(Integer,nullable = True)
+    lifetime = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
         latest = kwargs.get('latest', None)
         if latest != None:
@@ -82,6 +82,9 @@ class UpdateInstance(Base):
     created = Column(DateTime,nullable = False)
     expires = Column(DateTime,nullable = True)
     expired = Column(DateTime,nullable = True)
+    finshed = Column(DateTime,nullable = True)
+    triggers = Column(String(1024),nullable = False)
+    trig_parameters = Column(String(1024),nullable = False)
     def __init__(self, *args, **kwargs):
         returncode = kwargs.get('returncode', None)
         if returncode != None:
@@ -95,6 +98,9 @@ class UpdateInstance(Base):
         expires = kwargs.get('expires', None)
         if expires != None:
             self.expires = expires
+        finshed = kwargs.get('finshed', None)
+        if finshed != None:
+            self.finshed = finshed
         fk_update = kwargs.get('fk_update', None)
         if fk_update != None:
            self.fk_update = fk_update
@@ -105,8 +111,11 @@ class UpdateInstance(Base):
         cammand_line = kwargs.get('cammand_line', None)
         if cammand_line != None:
             self.cmdln = cammand_line
-        cammand_line = kwargs.get('cmdln_paramters', None)
-        
+        cmdln_paramters = kwargs.get('cmdln_paramters', None)
+        if cmdln_paramters != None:
+            self.cmdln = cammand_line
+        self.triggers = kwargs.get('triggers', None)
+        self.trig_parameters = kwargs.get('trig_parameters', "[]")
         
 class Block(Base):
     __tablename__ = 'Block'

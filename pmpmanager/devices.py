@@ -147,6 +147,9 @@ class database_model:
         
         find_existing = session.query(model.UpdateType).\
             filter(model.UpdateType.name == "lsblk")
+        if find_existing.count() == 0:
+            self.log.warning("Update_Add missing update_type")
+            return
         id_UpdateType = int(find_existing.one().id)
         find_existing = session.query(model.Update).\
             filter(model.UpdateType.id == id_UpdateType)
@@ -185,6 +188,7 @@ class database_model:
             newUpdate.returncode = None
             newUpdate.fk_update = id_UpdateType
             newUpdate.uuid = str(uuid.uuid1())
+            newUpdate.triggers = '[]'
             session.add(newUpdate)
             session.commit()
             find_existing = session.query(model.UpdateType).\
@@ -196,9 +200,9 @@ class database_model:
             return
         updateType = find_existing.one()
         
-        print updateType
+
         
-    def UpdateInstance_Run(self, *args, **kwargs):
+    def UpdateInstance_Run_old(self, *args, **kwargs):
         self.log.debug('UpdateInstance_Run')
         session = kwargs.get('session', None)
         if session == None:
@@ -223,6 +227,9 @@ class database_model:
                 session.commit()
                 self.Update_Add(update_type="lsblkrc",)
             if item_type.name == "":
-                print
+                pass
         session.commit()
+        
+    def UpdateInstance_Run(self, *args, **kwargs):
+        pass
         

@@ -6,13 +6,14 @@ import logging
 
 import datetime
 import uuid
-
+import json
+import string
 
 class job_que_man(object):
     """The old Job Jueu code is getting confusing so this code is rewrite
     the job_que_should be simple abstraction to queing commands"""
     def __init__(self):
-        self.log = logging.getLogger("uploaderFacade")
+        self.log = logging.getLogger("job_que_man")
         self._job_runnerImp = None
         self._flags = None
         self.session = None
@@ -27,17 +28,65 @@ class job_que_man(object):
         output = 0
         return output
     
+    
+    def queue_read(self, *args, **kwargs):
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        find_Update = session.query(model.UpdateInstance,model.Update,model.UpdateType).\
+                filter(model.UpdateInstance.finshed != None).\
+                filter(model.UpdateInstance.returncode != None).\
+                filter(model.UpdateInstance.fk_update == model.Update.id).\
+                filter(model.Update.fk_type == model.UpdateType.id).\
+                order_by(model.UpdateInstance.created)
+        #self.log.error('queue_dequeue=%s' % find_Update.count())
+        for item in find_Update:
+            UpdateInstance = item[0]
+            UpdateType = item[2]
+            Update =  item[1]
+            
+            tridggeres = json.loads ( UpdateInstance.triggers)
+            #self.log.error('tridggeres=%s' % tridggeres)
+            params = json.loads ( UpdateInstance.trig_parameters)
+            for trig in tridggeres:
+                self.log.error('trig=%s' % trig)
+                
+                update_query = session.query(model.Update).\
+                    filter(model.Update.fk_type == model.UpdateType.id).\
+                    filter(model.UpdateType.name == trig)
+                self.log.error('count=%s' % update_query.count())
+                for target in update_query:
+                    fk_update = target.id
+                    self.log.error('target.id=%s' % target.id)
+                    new_cmdln = string.Template(target.cmdln_template).substitute(para)
+                    self.log.info('new_cmdln=%s' % new_cmdln)
+                    self.log.info('para=%s' % para)
+                    newUpdateInstance = model.UpdateInstance()
+                    newUpdateInstance.fk_update = target.id
+                    newUpdateInstance.name = ""
+                    newUpdateInstance.created = datetime.datetime.now()
+                    newUpdateInstance.expires = datetime.datetime.now()
+                    newUpdateInstance.outputjson = None
+                    newUpdateInstance.returncode = None
+                    newUpdateInstance.uuid = str(uuid.uuid1())
+                    newUpdateInstance.triggers = "[]"
+                    newUpdateInstance.cmdln = new_cmdln
+                    session.add(newUpdateInstance)
+                    session.commit()
 
+                
+                
+                
     def queue_dequeue(self, *args, **kwargs):
+        self.log.debug('queue_dequeue')
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
         find_Update = session.query(model.UpdateInstance,model.UpdateType).\
                 filter(model.UpdateInstance.expired == None).\
                 filter(model.UpdateInstance.returncode == None).\
-                filter(model.UpdateInstance.cmdln != None).\
                 order_by(model.UpdateInstance.created)
-        
+        #self.log.error('queue_dequeue=%s' % find_Update.count())
         
         for item in find_Update:
             UpdateInstance = item[0]
@@ -51,17 +100,33 @@ class job_que_man(object):
             new_job_runner.expired = UpdateInstance.expires
             
             new_job_runner.run(session = session)
-            
-            
-            
-            
             UpdateInstance.outputjson = new_job_runner.outputjson
-            UpdateInstance.finished = datetime.datetime.now()
+            UpdateInstance.finshed = datetime.datetime.now()
             UpdateInstance.returncode = new_job_runner.returncode
-            #session.add(UpdateInstance)
-            #session.commit()
+            UpdateInstance.cmdln = new_job_runner.cmdln
+            UpdateInstance.triggers = new_job_runner.triggers
+            UpdateInstance.trig_parameters = new_job_runner.trig_parameters
+            
+            session.add(UpdateInstance)
+            session.commit()
+        
+        
+        self.queue_read(session = session)
+            
         return None
-    
+        
+        
+        
+    def initialise(self, *args, **kwargs) : 
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.session = session
+        for i in new_job_runner.job_classes.keys():
+            new_job_runner.job_class = i
+            new_job_runner.save()
+            
     def jobtype_available(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -77,7 +142,6 @@ class job_que_man(object):
         return output
         
     def job_persist(self, *args, **kwargs):
-        self.log.error("sssSSSSSSSssssssssssssssssSSSSSSSSSS")
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
@@ -156,10 +220,7 @@ class job_que_man(object):
                 
         
         if find_Update.count() == 0:
-            session.commit()
-            print ret_job_details.id
             newUpdateInstance = model.UpdateInstance()
-            print ret_job_details.id
             newUpdateInstance.fk_update == ret_job_details.id
             newUpdateInstance.name = name
             newUpdateInstance.created = datetime.datetime.now()
@@ -168,6 +229,7 @@ class job_que_man(object):
             newUpdateInstance.returncode = None
             newUpdateInstance.fk_update = ret_job_details.id
             newUpdateInstance.uuid = str(uuid.uuid1())
+            newUpdateInstance.triggers = "[]"
             session.add(newUpdateInstance)
             session.commit()
 def UpdateInstance_Run(self,session):
