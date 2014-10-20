@@ -44,10 +44,8 @@ class job_runner(bass_job_runner):
         instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
             filter(model.UpdateInstance.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
             filter(model.UpdateType.name == "lsblk_read").\
             order_by(model.UpdateInstance.created)
-        #self.log.warning("ddddd missing name")
         for instance in instance_query:
             UpdateType = instance[0]
             Update = instance[1]
