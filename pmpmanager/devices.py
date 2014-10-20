@@ -1,4 +1,4 @@
-
+import uuid
 import sys
 if sys.version_info < (2, 4):
     print "Your python interpreter is too old. Please consider upgrading."
@@ -184,6 +184,7 @@ class database_model:
             newUpdate.outputjson = None
             newUpdate.returncode = None
             newUpdate.fk_update = id_UpdateType
+            newUpdate.uuid = str(uuid.uuid1())
             session.add(newUpdate)
             session.commit()
             find_existing = session.query(model.UpdateType).\

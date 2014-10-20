@@ -35,8 +35,9 @@ class job_runner(object):
         self.log = logging.getLogger("job_runner_facade")
         self.job_classes = { 
             "kname_new" : job_runner_lsblk ,
-            "udev_query" : job_runner_udev_query }
-        
+            "udev_query" : job_runner_udev_query ,
+            "lsblk" : job_runner_lsblk,
+            }
         
     @Property
     def job_class():

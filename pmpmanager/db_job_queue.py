@@ -5,6 +5,8 @@ import db_devices as model
 import logging
 
 import datetime
+import uuid
+
 
 class job_que_man(object):
     """The old Job Jueu code is getting confusing so this code is rewrite
@@ -36,13 +38,10 @@ class job_que_man(object):
                 filter(model.UpdateInstance.cmdln != None).\
                 order_by(model.UpdateInstance.created)
         
-        print find_Update[0]
+        
         for item in find_Update:
             UpdateInstance = item[0]
             UpdateType = item[1]
-            print UpdateInstance.cmdln
-            print UpdateType.name
-            
             new_job_runner = db_job_runner.job_runner()
             new_job_runner.session = session
             new_job_runner.job_class = UpdateType.name
@@ -50,6 +49,17 @@ class job_que_man(object):
             new_job_runner.created = UpdateInstance.created
             new_job_runner.expires = UpdateInstance.expires
             new_job_runner.expired = UpdateInstance.expires
+            
+            new_job_runner.run(session = session)
+            
+            
+            
+            
+            UpdateInstance.outputjson = new_job_runner.outputjson
+            UpdateInstance.finished = datetime.datetime.now()
+            UpdateInstance.returncode = new_job_runner.returncode
+            #session.add(UpdateInstance)
+            #session.commit()
         return None
     
     def jobtype_available(self, *args, **kwargs):
@@ -146,15 +156,18 @@ class job_que_man(object):
                 
         
         if find_Update.count() == 0:
+            session.commit()
+            print ret_job_details.id
             newUpdateInstance = model.UpdateInstance()
+            print ret_job_details.id
             newUpdateInstance.fk_update == ret_job_details.id
             newUpdateInstance.name = name
             newUpdateInstance.created = datetime.datetime.now()
             newUpdateInstance.expires = datetime.datetime.now()
             newUpdateInstance.outputjson = None
             newUpdateInstance.returncode = None
-            
-            
+            newUpdateInstance.fk_update = ret_job_details.id
+            newUpdateInstance.uuid = str(uuid.uuid1())
             session.add(newUpdateInstance)
             session.commit()
 def UpdateInstance_Run(self,session):

@@ -17,6 +17,8 @@ from sqlalchemy.ext.declarative import declarative_base
 import datetime
 
 from sqlalchemy.schema import UniqueConstraint
+import uuid
+
 ##########################################
 # makes key value tables to increase flexibility.
 
@@ -69,10 +71,10 @@ class UpdateInstance(Base):
     """
     __tablename__ = 'job_scheduling'
     id = Column(Integer, primary_key=True)
-    fk_update = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_update = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     
     cmdln = Column(String(1024),unique=False,nullable = True)
-    
+    uuid = Column(String(30),unique=False,nullable = False)
     
     
     returncode = Column(Integer,nullable = True)
@@ -121,7 +123,8 @@ class Block(Base):
         
         idVendor = kwargs.get('idVendor', None)
         if idVendor != None:
-           self.idVendor = idVendor
+           self.idVendor = uuid.uuid()
+
         idProduct = kwargs.get('idProduct', None)
         if idProduct != None:
            self.idProduct = idProduct
