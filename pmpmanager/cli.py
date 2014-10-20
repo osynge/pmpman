@@ -193,8 +193,8 @@ def process_actions(defaults,callbacks):
     #if 'endorser_show' in actions:
     #    json_output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
     #    if json_output != None:
-    #        print json_outpu
-    return outpu
+    #        print json_output
+    return output
 
 def get_parrameters_enviroment(defaults):
     output = dict()
@@ -208,7 +208,7 @@ def get_parrameters_enviroment(defaults):
     if 'HOME' in os.environ:
         output['pmpman.path.home'] = str(os.environ['HOME'])
 
-    return outpu
+    return output
 
 def get_parrameters_cli_init(defaults):
     output = dict()
@@ -220,6 +220,7 @@ def get_parrameters_cli_init(defaults):
     p.add_option('-v', '--verbose', action ='count',help='Change global log level, increasing log output.', metavar='LOGFILE')
     p.add_option('-q', '--quiet', action ='count',help='Change global log level, decreasing log output.', metavar='LOGFILE')
     p.add_option('-C', '--config-file', action ='store',help='Configuration file.', metavar='CFG_FILE')
+    p.add_option('--mark-udev', action ='store',help='Called by udev $name')
     p.add_option('--list-partitions', action ='store_true',help='Called by udev $name')
     p.add_option('--block-list', action ='store_true',help='Scan All Partitions')
     p.add_option('--block-scan', action ='store_true',help='Scan All Partitions')
@@ -238,7 +239,7 @@ def get_parrameters_cli_init(defaults):
         if options.verbose == 2:
             LoggingLevel = logging.DEBUG
     if options.quiet:
-        LoggingLevelCounter = LoggingLevelCounter + options.quie
+        LoggingLevelCounter = LoggingLevelCounter + options.quiet
     if LoggingLevelCounter <= 0:
         LoggingLevel = logging.DEBUG
     if LoggingLevelCounter == 1:
@@ -292,4 +293,4 @@ def get_parrameters_cli_init(defaults):
     if output.get('pmpman.rdms') == None:
         output['pmpman.rdms'] = 'sqlite:///pmpman.db'
         log.info("Defaulting DB connection to '%s'" % (output['pmpman.rdms']))
-    return outpu
+    return output
