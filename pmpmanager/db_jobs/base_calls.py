@@ -57,9 +57,13 @@ def Update_Add(*args, **kwargs):
 
 def Links_store(*args, **kwargs):
     log = logging.getLogger("Links_store")
-    update_type = kwargs.get('update_type', None)
-    if update_type == None:
-        log.warning("missing update_type")
+    source = kwargs.get('source', None)
+    if source == None:
+        log.warning("missing source")
+        return
+    dest = kwargs.get('dest', None)
+    if dest == None:
+        log.warning("missing dest")
         return
     
     sk_uuid = kwargs.get('sk_uuid', None)
@@ -71,7 +75,7 @@ def Links_store(*args, **kwargs):
         log.warning("missing name")
         return
     find_existing = session.query(model.UpdateInstance).\
-            filter(model.UpdateType.name == update_type)
+            filter(model.UpdateType.name == source)
     if find_existing.count == 0:
         newUpdateType = model.UpdateType()
         newUpdateType.name = name
