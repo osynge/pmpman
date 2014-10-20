@@ -14,7 +14,7 @@ if __name__ == "__main__":
     main()
 
 
-    
+
 class CliInput:
     def __init__(self):
         self.defaults = dict()
@@ -65,17 +65,17 @@ class ProcesHandler:
         self.UI = None
         if UI != None:
             self.UI = UI
-        
+
     def connect_db(self):
         self.database = devices.database_model(self.UI.defaults['pmpman.rdms'])
-        
+
     def cb_pmpman_action_udev(self,caller=None):
         procerss = 'pmpman.action.udev'
         self.log.info("cb_pmpman_action_udev")
         #output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
-        
+
         self.connect_db()
-        
+
     def cb_pmpman_action_list(self,caller=None):
         self.log.debug("cb_pmpman_action_list")
         self.connect_db()
@@ -88,7 +88,7 @@ class ProcesHandler:
         #self.database.UpdateInstance_Run()
         #self.database.Update_Add(update_type="udevadm_info",
         #   cammand_line = "" )
-        
+
         #self.database.Update_Run(update_type="lsblk")
         #self.database.UpdateInstance_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
@@ -106,66 +106,74 @@ class ProcesHandler:
                 name = "lsblk_query",
                 session = session,
             )
-            
+
         QM.job_persist(job_type = "udev_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "lsblk_query",
                 session = session,
             )
-            
-        
-            
-        
+
+
+
+
         available = QM.jobtype_available(job_type = "lsblk_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "udev_query",
                 session = session,
             )
-            
-        
+
+
         QM.queue_dequeue(session = session)
         QM.queue_dequeue(session = session)
 
     def cb_pmpman_block_list(self,caller=None):
-        self.log.debug("cb_pmpman_action_list")
+        self.log.debug("cb_pmpman_block_list")
         self.connect_db()
         session = self.database.Session()
 
 
+    def cb_pmpman_block_scan(self,caller=None):
+        self.log.debug("cb_pmpman_block_scan")
+        self.connect_db()
+        session = self.database.Session()
+        self.log.info("cb_pmpman_block_scan")
+
     def Connect(self):
         """This function sets callbacks"""
-        
+
         parmetes =  {
             'pmpman.action.udev' : [ { 'callback' : self.cb_pmpman_action_udev } ],
             'pmpman.action.partition.list' : [ { 'callback' : self.cb_pmpman_action_list } ],
             'pmpman.action.block.list' : [ { 'callback' : self.cb_pmpman_block_list } ],
+            'pmpman.action.block.scan' : [ { 'callback' : self.cb_pmpman_block_scan } ],
+
             }
         self.UI.callbacks_set(parmetes)
-        
+
 
 def main():
     defaults = dict()
     defaults = get_parrameters_enviroment(defaults)
     log = logging.getLogger("cli")
-    
+
     UI = CliInput()
-    
+
     UI.defaults = defaults
     UI.get_parrameters_cli_init()
     log = logging.getLogger("cli")
     PH = ProcesHandler(UI)
-    
+
     PH.Connect()
-    
+
     UI.process_actions()
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
 def process_actions(defaults,callbacks):
     log = logging.getLogger("process_actions")
     output = dict()
@@ -174,20 +182,20 @@ def process_actions(defaults,callbacks):
     if actions == None:
         actions = set()
     if len(actions) == 0:
-        log.warning('No actions selected')   
-    #log.debug("actions=%s" % (actions)) 
-    #log.debug("callbacks=%s" % (callbacks)) 
+        log.warning('No actions selected')
+    #log.debug("actions=%s" % (actions))
+    #log.debug("callbacks=%s" % (callbacks))
     for match_tuple in actions.intersection(callbacks.keys()):
         for i in range ( len(callbacks[match_tuple])):
             callback = callbacks[match_tuple][i].get('callback')
             callback(caller = defaults)
-            
+
     #if 'endorser_show' in actions:
     #    json_output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
     #    if json_output != None:
-    #        print json_output
-    return output
-    
+    #        print json_outpu
+    return outpu
+
 def get_parrameters_enviroment(defaults):
     output = dict()
     output.update(defaults)
@@ -199,8 +207,8 @@ def get_parrameters_enviroment(defaults):
         output['pmpman.path.cfg'] = str(os.environ['PMPMAN_CFG'])
     if 'HOME' in os.environ:
         output['pmpman.path.home'] = str(os.environ['HOME'])
-    
-    return output
+
+    return outpu
 
 def get_parrameters_cli_init(defaults):
     output = dict()
@@ -212,12 +220,11 @@ def get_parrameters_cli_init(defaults):
     p.add_option('-v', '--verbose', action ='count',help='Change global log level, increasing log output.', metavar='LOGFILE')
     p.add_option('-q', '--quiet', action ='count',help='Change global log level, decreasing log output.', metavar='LOGFILE')
     p.add_option('-C', '--config-file', action ='store',help='Configuration file.', metavar='CFG_FILE')
-    p.add_option('--mark-udev', action ='store',help='Called by udev $name')
     p.add_option('--list-partitions', action ='store_true',help='Called by udev $name')
     p.add_option('--block-list', action ='store_true',help='Scan All Partitions')
     p.add_option('--block-scan', action ='store_true',help='Scan All Partitions')
-    
-    
+
+
     actions = set()
     requires = set()
     options, arguments = p.parse_args()
@@ -231,7 +238,7 @@ def get_parrameters_cli_init(defaults):
         if options.verbose == 2:
             LoggingLevel = logging.DEBUG
     if options.quiet:
-        LoggingLevelCounter = LoggingLevelCounter + options.quiet
+        LoggingLevelCounter = LoggingLevelCounter + options.quie
     if LoggingLevelCounter <= 0:
         LoggingLevel = logging.DEBUG
     if LoggingLevelCounter == 1:
@@ -258,7 +265,7 @@ def get_parrameters_cli_init(defaults):
     else:
         output['pmpman.path.cfg'] = None
         logging.basicConfig(level=LoggingLevel)
-        
+
     log = logging.getLogger("main")
     if options.mark_udev:
         actions.add('pmpman.action.udev')
@@ -266,23 +273,23 @@ def get_parrameters_cli_init(defaults):
     if options.mark_udev:
         actions.add('pmpman.action.udev')
         output["pmpman.udev.partition"] = options.mark_udev
-        
+
     if options.list_partitions:
         actions.add('pmpman.action.partition.list')
 
 
     if options.block_list:
         actions.add('pmpman.action.block.list')
-    
+
     if options.block_scan:
         actions.add('pmpman.action.block.scan')
-    
+
     output["pmpman.cli.actions"] = actions
-    
+
     if options.database:
         output['pmpman.rdms'] = options.database
-    
+
     if output.get('pmpman.rdms') == None:
         output['pmpman.rdms'] = 'sqlite:///pmpman.db'
         log.info("Defaulting DB connection to '%s'" % (output['pmpman.rdms']))
-    return output
+    return outpu
