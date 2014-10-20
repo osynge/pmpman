@@ -88,9 +88,9 @@ class ProcesHandler:
         self.connect_db()
         session = self.database.Session()
         #lsblk.updatdatabase(session)
-        #self.database.UpdateType_Add(update_type="lsblk",)
-        #self.database.UpdateType_Add(update_type="udevadm_info")
-        #self.database.UpdateType_Run()
+        #self.database.job_namespace_Add(update_type="lsblk",)
+        #self.database.job_namespace_Add(update_type="udevadm_info")
+        #self.database.job_namespace_Run()
         #self.database.Update_Run()
         #self.database.job_execution_Run()
         #self.database.Update_Add(update_type="udevadm_info",

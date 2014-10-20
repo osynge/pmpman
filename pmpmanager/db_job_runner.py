@@ -311,8 +311,8 @@ class job_runner(object):
         restor_details = None
         key = kwargs.get('key', None)
         if key != None:
-            restor_details = session.query(model.UpdateType).\
-                filter(model.UpdateType.name == name).one()
+            restor_details = session.query(model.job_namespace).\
+                filter(model.job_namespace.name == name).one()
         if getdetails == None:
             pass
             

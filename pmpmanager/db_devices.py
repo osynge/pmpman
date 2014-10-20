@@ -25,7 +25,7 @@ import uuid
 Base = declarative_base()
 
 
-class UpdateType(Base):
+class job_namespace(Base):
     __tablename__ = 'job_type'
     id = Column(Integer, primary_key=True)
     name = Column(String(1024),nullable = False,unique=True)
@@ -40,7 +40,7 @@ class Update(Base):
     """Stores reoccuring jobs"""
     __tablename__ = 'job_def'
     id = Column(Integer, primary_key=True)
-    fk_type = Column(Integer, ForeignKey(UpdateType.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    fk_type = Column(Integer, ForeignKey(job_namespace.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     cmdln_template = Column(String(1024),unique=False,nullable = False)
     cmdln_paramters = Column(String(1024),unique=False)
     latest = Column(Integer,nullable = True)
@@ -235,6 +235,9 @@ class Mount(Base):
         self.value = value
     def __repr__(self):
         return "<EndorserMetadata('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
+
+
 
 def init(engine):
     Base.metadata.create_all(engine)

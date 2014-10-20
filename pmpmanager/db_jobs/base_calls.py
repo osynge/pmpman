@@ -7,23 +7,23 @@ import uuid
 def Property(func):
     return property(**func())
 
-def UpdateType_Add(*args, **kwargs):
-    log = logging.getLogger("UpdateType_Add")
+def job_namespace_Add(*args, **kwargs):
+    log = logging.getLogger("job_namespace_Add")
     name = kwargs.get('name', None)
     if name == None:
-        log.warning("UpdateType_Add missing name")
+        log.warning("job_namespace_Add missing name")
         return
     session = kwargs.get('session', None)
     if session == None:
         log.warning("Update_Add missing name")
         return
-    find_existing = session.query(model.UpdateType).\
-            filter(model.UpdateType.name == name)
+    find_existing = session.query(model.job_namespace).\
+            filter(model.job_namespace.name == name)
     if find_existing.count() >= 1:
         return
-    newUpdateType = model.UpdateType()
-    newUpdateType.name = name
-    session.add(newUpdateType)
+    newjob_namespace = model.UpdateType()
+    newjob_namespace.name = name
+    session.add(newjob_namespace)
     session.commit()
 
 def Update_Add(*args, **kwargs):
@@ -42,15 +42,15 @@ def Update_Add(*args, **kwargs):
         log.warning("Update_Add missing name")
         return
     find_existing = session.query(model.job_execution).\
-            filter(model.UpdateType.name == update_type)
+            filter(model.job_namespace.name == update_type)
     if find_existing.count == 0:
-        newUpdateType = model.UpdateType()
-        newUpdateType.name = name
-        session.add(newUpdateType)
+        newjob_namespace = model.UpdateType()
+        newjob_namespace.name = name
+        session.add(newjob_namespace)
         session.commit()
         session = self.SessionFactory()
-        find_existing = session.query(model.UpdateType).\
-            filter(model.UpdateType.name == name)
+        find_existing = session.query(model.job_namespace).\
+            filter(model.job_namespace.name == name)
         log.warning( find_existing.one())
 
 
@@ -81,13 +81,13 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
             
             
     if find_existing.count == 0:
-        newUpdateType = model.UpdateType()
-        newUpdateType.name = name
-        session.add(newUpdateType)
+        newjob_namespace = model.UpdateType()
+        newjob_namespace.name = name
+        session.add(newjob_namespace)
         session.commit()
         session = self.SessionFactory()
         find_existing = session.query(model.job_triggers,).\
-            filter(model.UpdateType.name == source).\
+            filter(model.job_namespace.name == source).\
             filter(model.name == source)
             
             
@@ -143,7 +143,7 @@ class job_runner():
         #for it in self.session.query()
         #self.log.error("self.job_class=%s" % self.job_class)
         #self.log.error("self.session=%s" % self.session)
-        UpdateType_Add(session=self.session,
+        job_namespace_Add(session=self.session,
              name = self.job_class)
         Update_Add(session=self.session,
              update_type = self.job_class,

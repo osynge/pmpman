@@ -86,16 +86,16 @@ def updatdatabase(session=None):
     id_update_type = None
     id_update = None
     if len(blocks_discoverd) > 0:
-        find_existing = session.query(model.UpdateType,
+        find_existing = session.query(model.job_namespace,
                 ).\
-            filter(model.UpdateType.name == "kname_new")
+            filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:
-            newUpdateType = model.UpdateType()
-            newUpdateType.name = "kname_new"
-            session.add(newUpdateType)
+            newjob_namespace = model.UpdateType()
+            newjob_namespace.name = "kname_new"
+            session.add(newjob_namespace)
             session.commit()
-            find_existing = session.query(model.UpdateType,).\
-                filter(model.UpdateType.name == "kname_new")
+            find_existing = session.query(model.job_namespace,).\
+                filter(model.job_namespace.name == "kname_new")
             id_update_type = int(find_existing.first().id)
         else:
             id_update_type = int(find_existing.first().id)
@@ -127,9 +127,9 @@ def updatdatabase(session=None):
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
-            filter("lsblk" == model.UpdateType.name).\
-            filter(model.job_execution.fk_update == model.UpdateType.id)
+            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter("lsblk" == model.job_namespace.name).\
+            filter(model.job_execution.fk_update == model.job_namespace.id)
         for i in find_existing:
             log.debug("i=%s"  % (i))            
         #log.debug("device_details=%s"  % (device_details))
@@ -151,48 +151,48 @@ def updatdatabase(session=None):
         session.commit()
         did_something = True
     if did_something:
-        find_existing = session.query(model.UpdateType,
+        find_existing = session.query(model.job_namespace,
                 ).\
-            filter(model.UpdateType.name == "kname_new")
+            filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:
-            newUpdateType = model.UpdateType()
-            newUpdateType.name = "kname_new"
-            session.add(newUpdateType)
+            newjob_namespace = model.UpdateType()
+            newjob_namespace.name = "kname_new"
+            session.add(newjob_namespace)
         find_existing = session.query(model.Update,
                 ).\
-            filter(model.Update.fk_type ==model.UpdateType.id).\
-            filter(model.UpdateType.name == "kname_new")
+            filter(model.Update.fk_type ==model.job_namespace.id).\
+            filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:        
             index = None
-            find_type = session.query(model.UpdateType,
+            find_type = session.query(model.job_namespace,
                     ).\
-                filter(model.UpdateType.name == "kname_new")
+                filter(model.job_namespace.name == "kname_new")
             if find_type.count() == 0:
-                newUpdateType = model.UpdateType()
-                newUpdateType.name = "kname_new"
-                session.add(newUpdateType)
+                newjob_namespace = model.UpdateType()
+                newjob_namespace.name = "kname_new"
+                session.add(newjob_namespace)
                 session.commit()
-            find_type = session.query(model.UpdateType,
+            find_type = session.query(model.job_namespace,
                     ).\
-                filter(model.UpdateType.name == "kname_new")
+                filter(model.job_namespace.name == "kname_new")
             typeID = int(find_type.one().id)
-            newUpdateType = model.Update()
-            newUpdateType.fk_type = typeID
-            newUpdateType.name = "kname_new"
-            session.add(newUpdateType)
+            newjob_namespace = model.Update()
+            newjob_namespace.fk_type = typeID
+            newjob_namespace.name = "kname_new"
+            session.add(newjob_namespace)
             session.commit()
         find_existing = session.query(model.Update,
                 ).\
-            filter(model.Update.fk_type ==model.UpdateType.id).\
-            filter(model.UpdateType.name == "kname_new")   
+            filter(model.Update.fk_type ==model.job_namespace.id).\
+            filter(model.job_namespace.name == "kname_new")   
         
             
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
-            filter("lsblk" == model.UpdateType.name).\
-            filter(model.job_execution.fk_update == model.UpdateType.id)
+            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter("lsblk" == model.job_namespace.name).\
+            filter(model.job_execution.fk_update == model.job_namespace.id)
         
     for device_key in blocks_lost:
         log.warning('Code not complete')

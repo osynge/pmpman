@@ -42,25 +42,25 @@ class job_runner(bass_job_runner):
             self.log.warning("Update_Add missing name")
             return
         #self.log.warning("running")
-        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
             filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
+            filter(model.Update.fk_type == model.job_namespace.id).\
             order_by(model.job_execution.created)
         #self.log.warning("count=%s" % instance_query.count())
         #for item in instance_query:
         #    print item[0].name
 
-        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
             filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
-            filter(model.UpdateType.name == "lsblk_query").\
+            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter(model.job_namespace.name == "lsblk_query").\
             order_by(model.job_execution.created)
         #self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
-            UpdateType = instance[0]
+            job_namespace = instance[0]
             Update = instance[1]
             job_execution = instance[2]
-            #self.log.error("UpdateType.name=%s" % UpdateType.name)
+            #self.log.error("job_namespace.name=%s" % UpdateType.name)
             #self.log.warning("sss=%s" % (job_execution.outputjson))
             if job_execution.outputjson == None:
                 continue
@@ -69,13 +69,13 @@ class job_runner(bass_job_runner):
                 continue
             for item in read_output:
                 print item
-                dest_query = session.query(model.UpdateType,model.Update).\
-                    filter(model.Update.fk_type == model.UpdateType.id).\
-                    filter(model.UpdateType.name == "udev_query")
+                dest_query = session.query(model.job_namespace,model.Update).\
+                    filter(model.Update.fk_type == model.job_namespace.id).\
+                    filter(model.job_namespace.name == "udev_query")
                 new_cmdln = "udevadm info -q all -n /dev/%s" % (key)
 
                 for item in dest_query:
-                    UpdateType = item[0]
+                    job_namespace = item[0]
                     Update = item[1]
                     newjob_execution = model.UpdateInstance()
                     newjob_execution.fk_update = Update.id
@@ -92,10 +92,10 @@ class job_runner(bass_job_runner):
             #session.delete(job_execution)
             session.commit()
 
-        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
             filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.UpdateType.id).\
-            filter(model.UpdateType.name == "lsblk_read").\
+            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter(model.job_namespace.name == "lsblk_read").\
             order_by(model.job_execution.created)
         for instance in instance_query:
             print instance
