@@ -78,6 +78,13 @@ class ProcesHandler:
 
     def cb_pmpman_action_list(self,caller=None):
         self.log.debug("cb_pmpman_action_list")
+
+
+
+
+
+    def cb_pmpman_block_scan(self,caller=None):
+        self.log.debug("cb_pmpman_block_scan")
         self.connect_db()
         session = self.database.Session()
         #lsblk.updatdatabase(session)
