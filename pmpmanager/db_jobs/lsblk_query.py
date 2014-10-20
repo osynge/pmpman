@@ -39,11 +39,11 @@ def runpreloadcommand(cmd,timeout):
             processRc = -9
             break
     return (processRc,stdout,stderr)
-    
+
 
 def Property(func):
     return property(**func())
-    
+
 
 class job_runner(bass_job_runner):
     def __init__(self):
@@ -61,11 +61,11 @@ class job_runner(bass_job_runner):
 
         def fset(self, value):
             self._session = value
-            
+
         def fdel(self):
             del self._session
         return locals()
-    
+
     @Property
     def cmdln():
         doc = "cmdlin property"
@@ -74,7 +74,7 @@ class job_runner(bass_job_runner):
             return cmdln
 
         return locals()
-    
+
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -82,9 +82,9 @@ class job_runner(bass_job_runner):
             return
 
 
-        
+
         #log.debug("command=%s" % (command))
-        
+
         processRc,stdout,stderr = self.execuet_cmdln(cmdln = self.cmdln, timeout=10)
         #log.debug("stdout=%s" % (stdout))
         output = {}
@@ -108,11 +108,11 @@ class job_runner(bass_job_runner):
         self.returncode = processRc
         self.stdout = stderr
         self.outputjson = json.dumps(output,sort_keys=True, indent=4)
-        self.cmdln = command
+
         self.triggers = json.dumps(["lsblk_read"],sort_keys=True, indent=4)
-        
+
         paramters = []
         for key in output.keys():
             paramters.append(output[key])
         self.trig_parameters = json.dumps(paramters,sort_keys=True, indent=4)
-  
+
