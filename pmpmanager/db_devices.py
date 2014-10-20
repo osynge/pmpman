@@ -36,7 +36,20 @@ class job_namespace(Base):
            self.name = name
         self.lifetime = kwargs.get('lifetime', 60)
 
-class Update(Base):
+
+class job_state(Base):
+    __tablename__ = 'job_state'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(24),nullable = False,unique=True)
+    def __init__(self, *args, **kwargs):
+        name = kwargs.get('name', None)
+        if name != None:
+           self.name = name
+        
+
+
+
+class job_def(Base):
     """Stores reoccuring jobs"""
     __tablename__ = 'job_def'
     id = Column(Integer, primary_key=True)
@@ -71,7 +84,7 @@ class job_execution(Base):
     """
     __tablename__ = 'job_scheduling'
     id = Column(Integer, primary_key=True)
-    fk_update = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     
     cmdln = Column(String(1024),unique=False,nullable = True)
     uuid = Column(String(30),unique=False,nullable = False)
@@ -129,8 +142,8 @@ class job_triggers(Base):
     __tablename__ = 'JOB_TRIGGERS'
     id = Column(Integer, primary_key=True)
     sk_uuid = Column(String(30),unique=False,nullable = False)
-    source = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
-    dest = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    source = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    dest = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     
     def __init__(self, *args, **kwargs):
         sk_uuid = kwargs.get('sk_uuid', None)
@@ -150,7 +163,7 @@ class job_triggers(Base):
 class Block(Base):
     __tablename__ = 'Block'
     id = Column(Integer, primary_key=True)
-    fk_update = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     devName= Column(String(100),nullable = False,unique=True)
     
     idVendor = Column(String(100),unique=False)
@@ -186,7 +199,7 @@ class FilesystemType(Base):
     __tablename__ = 'FilesystemType'
     id = Column(Integer, primary_key=True)
     fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    fk_update = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"))
     name = Column(String(64),nullable = True,unique=True)
     
     key = Column(String(200),nullable = False)

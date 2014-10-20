@@ -24,18 +24,18 @@ import db_jobs.lsblk_read as job_runner_lsblk_read
 
 import db_jobs.udev_query as job_runner_udev_query
 import db_jobs.udev_read as job_runner_udev_read
- 
-   
+
+
 
 
 class job_runner(object):
     """Facade class for mulitple implementations of a job junner,
     Should be robust for setting the impleemntation or attributes
     in any order."""
-    
+
     def __init__(self):
         self.log = logging.getLogger("job_runner_facade")
-        self.job_classes = { 
+        self.job_classes = {
             "kname_new" :  job_runner_udev_read,
             "udev_query" : job_runner_udev_query ,
             "lsblk_query" : job_runner_lsblk_query,
@@ -43,7 +43,7 @@ class job_runner(object):
             "udev_read" : job_runner_udev_read,
             "lsblk_read" : job_runner_lsblk_read,
             }
-        
+
     @Property
     def job_class():
         def fget(self):
@@ -64,8 +64,8 @@ class job_runner(object):
                 if hasattr(self, '_job_class'):
                     del (self._job_runnerImp)
                 return
-            
-                
+
+
             tmpJobRnner = self.job_classes[name].job_runner()
             tmpJobRnner.job_class = name
             tmpJobRnner.session = self.session
@@ -75,16 +75,17 @@ class job_runner(object):
             tmpJobRnner.created = self.created
             tmpJobRnner.expires = self.expires
             tmpJobRnner.expired = self.expired
+            tmpJobRnner.uuid_execution = self.uuid_execution
 
             if hasattr(self, '_job_class'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
-            
-            
+
+
         def fdel(self):
             del self._uploader
         return locals()
-    
+
 
     @Property
     def session():
@@ -119,7 +120,7 @@ class job_runner(object):
                         return self._job_runnerImp.cmdln
                     else:
                         return None
-            if hasattr(self, '_cmdln'):   
+            if hasattr(self, '_cmdln'):
                 return self._cmdln
 
         def fset(self, value):
@@ -141,7 +142,7 @@ class job_runner(object):
                         return self._job_runnerImp.returncode
                     else:
                         return None
-            if hasattr(self, '_returncode'):   
+            if hasattr(self, '_returncode'):
                 return self._returncode
 
         def fset(self, value):
@@ -163,7 +164,7 @@ class job_runner(object):
                         return self._job_runnerImp.outputjson
                     else:
                         return None
-            if hasattr(self, '_outputjson'):   
+            if hasattr(self, '_outputjson'):
                 return self._outputjson
 
         def fset(self, value):
@@ -185,7 +186,7 @@ class job_runner(object):
                         return self._job_runnerImp.created
                     else:
                         return None
-            if hasattr(self, '_created'):   
+            if hasattr(self, '_created'):
                 return self._created
 
         def fset(self, value):
@@ -197,7 +198,7 @@ class job_runner(object):
         def fdel(self):
             del self._created
         return locals()
-    
+
     @Property
     def expires():
         doc = "Remote upload prefix"
@@ -208,7 +209,7 @@ class job_runner(object):
                         return self._job_runnerImp.expires
                     else:
                         return None
-            if hasattr(self, '_expires'):   
+            if hasattr(self, '_expires'):
                 return self._expires
 
         def fset(self, value):
@@ -220,8 +221,8 @@ class job_runner(object):
         def fdel(self):
             del self._expires
         return locals()
-    
-    
+
+
     @Property
     def expired():
         doc = "Remote upload prefix"
@@ -232,7 +233,7 @@ class job_runner(object):
                         return self._job_runnerImp.expired
                     else:
                         return None
-            if hasattr(self, '_expired'):   
+            if hasattr(self, '_expired'):
                 return self._expired
 
         def fset(self, value):
@@ -244,7 +245,7 @@ class job_runner(object):
         def fdel(self):
             del self._expired
         return locals()
-    
+
     @Property
     def triggers():
         doc = "Remote upload prefix"
@@ -255,7 +256,7 @@ class job_runner(object):
                         return self._job_runnerImp.triggers
                     else:
                         return None
-            if hasattr(self, '_triggers'):   
+            if hasattr(self, '_triggers'):
                 return self._triggers
 
         def fset(self, value):
@@ -267,8 +268,8 @@ class job_runner(object):
         def fdel(self):
             del self._triggers
         return locals()
-    
-    
+
+
     @Property
     def trig_parameters():
         doc = "Remote upload prefix"
@@ -279,7 +280,7 @@ class job_runner(object):
                         return self._job_runnerImp.trig_parameters
                     else:
                         return None
-            if hasattr(self, '_trig_parameters'):   
+            if hasattr(self, '_trig_parameters'):
                 return self._trig_parameters
 
         def fset(self, value):
@@ -291,19 +292,42 @@ class job_runner(object):
         def fdel(self):
             del self._trig_parameters
         return locals()
-    
-    
-    
+
+    @Property
+    def uuid_execution():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'uuid_execution'):
+                        return self._job_runnerImp.uuid_execution
+                    else:
+                        return None
+            if hasattr(self, '_uuid_execution'):
+                return self._uuid_execution
+
+        def fset(self, value):
+            self._uuid_execution = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.uuid_execution != value:
+                        self._job_runnerImp.uuid_execution = value
+        def fdel(self):
+            del self._uuid_execution
+        return locals()
+
+
+
     def run(self, *args, **kwargs):
         if hasattr(self, '_job_runnerImp'):
             return self._job_runnerImp.run(*args, **kwargs)
-    
+
     def save(self, *args, **kwargs):
         if hasattr(self, '_job_runnerImp'):
             return self._job_runnerImp.save()
 
 
-        
+
     def restore(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -315,8 +339,8 @@ class job_runner(object):
                 filter(model.job_namespace.name == name).one()
         if getdetails == None:
             pass
-            
-        
-        
-        
-        
+
+
+
+
+

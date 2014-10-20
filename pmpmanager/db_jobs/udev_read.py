@@ -40,7 +40,7 @@ class job_runner(bass_job_runner):
         self.trig_parameters = json.dumps([],sort_keys=True, indent=4)
         session = kwargs.get('session', None)
         if session == None:
-            log.warning("Update_Add missing name")
+            log.warning("job_def_Add missing name")
             return
         session.query()
 

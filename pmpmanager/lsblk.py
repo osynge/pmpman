@@ -100,34 +100,34 @@ def updatdatabase(session=None):
         else:
             id_update_type = int(find_existing.first().id)
             
-        find_existing = session.query(model.Update).\
-            filter(model.Update.fk_type == id_update_type)
+        find_existing = session.query(model.job_def).\
+            filter(model.job_def.fk_type == id_update_type)
         if find_existing.count() == 0:
-            newUpdate = model.Update()
-            newUpdate.fk_type = id_update_type
-            newUpdate.cmdln_template = "updatdatabase"
-            newUpdate.cmdln_paramters = "updatdatabase"
-            session.add(newUpdate)
+            newjob_def = model.job_def()
+            newjob_def.fk_type = id_update_type
+            newjob_def.cmdln_template = "updatdatabase"
+            newjob_def.cmdln_paramters = "updatdatabase"
+            session.add(newjob_def)
             session.commit()
-            find_existing = session.query(model.Update).\
-                filter(model.Update.fk_type == id_update_type)
+            find_existing = session.query(model.job_def).\
+                filter(model.job_def.fk_type == id_update_type)
         id_update = int(find_existing.first().id)
         find_existing = session.query(model.job_execution).\
             filter(model.job_execution.fk_update == id_update)
 
         if find_existing.count() == 0:
-            newUpdate = model.job_execution()
-            newUpdate.fk_update = id_update
-            newUpdate.cmdln = "here is is"
-            newUpdate.created = datetime.datetime.now()
-            newUpdate.uuid = str(uuid.uuid1())
-            session.add(newUpdate)
+            newjob_def = model.job_execution()
+            newjob_def.fk_update = id_update
+            newjob_def.cmdln = "here is is"
+            newjob_def.created = datetime.datetime.now()
+            newjob_def.uuid = str(uuid.uuid1())
+            session.add(newjob_def)
             session.commit()
             
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             filter("lsblk" == model.job_namespace.name).\
             filter(model.job_execution.fk_update == model.job_namespace.id)
         for i in find_existing:
@@ -158,9 +158,9 @@ def updatdatabase(session=None):
             newjob_namespace = model.job_namespace()
             newjob_namespace.name = "kname_new"
             session.add(newjob_namespace)
-        find_existing = session.query(model.Update,
+        find_existing = session.query(model.job_def,
                 ).\
-            filter(model.Update.fk_type ==model.job_namespace.id).\
+            filter(model.job_def.fk_type ==model.job_namespace.id).\
             filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:        
             index = None
@@ -176,21 +176,21 @@ def updatdatabase(session=None):
                     ).\
                 filter(model.job_namespace.name == "kname_new")
             typeID = int(find_type.one().id)
-            newjob_namespace = model.Update()
+            newjob_namespace = model.job_def()
             newjob_namespace.fk_type = typeID
             newjob_namespace.name = "kname_new"
             session.add(newjob_namespace)
             session.commit()
-        find_existing = session.query(model.Update,
+        find_existing = session.query(model.job_def,
                 ).\
-            filter(model.Update.fk_type ==model.job_namespace.id).\
+            filter(model.job_def.fk_type ==model.job_namespace.id).\
             filter(model.job_namespace.name == "kname_new")   
         
             
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             filter("lsblk" == model.job_namespace.name).\
             filter(model.job_execution.fk_update == model.job_namespace.id)
         

@@ -110,18 +110,18 @@ class database_model:
         session.add(newjob_namespace)
         session.commit()
 
-    def Update_Add(self, *args, **kwargs):
+    def job_def_Add(self, *args, **kwargs):
         update_type = kwargs.get('update_type', None)
         if update_type == None:
-            self.log.warning("Update_Add missing update_type")
+            self.log.warning("job_def_Add missing update_type")
             return
         cammand_line = kwargs.get('cammand_line', None)
         if cammand_line == None:
-            self.log.warning("Update_Add missing cammand_line")
+            self.log.warning("job_def_Add missing cammand_line")
             return
         name = kwargs.get('name', None)
         if name == None:
-            self.log.warning("Update_Add missing name")
+            self.log.warning("job_def_Add missing name")
             return
         session = self.SessionFactory()
         find_existing = session.query(model.job_execution).\
@@ -136,10 +136,10 @@ class database_model:
                 filter(model.job_namespace.name == name)
             self.log.warning( find_existing.one())
 
-    def Update_Run(self, *args, **kwargs):
+    def job_def_Run(self, *args, **kwargs):
         update_type = kwargs.get('update_type', None)
         if update_type == None:
-            self.log.warning("Update_Add missing update_type")
+            self.log.warning("job_def_Add missing update_type")
             return
         session = kwargs.get('session', None)
         if session == None:
@@ -148,48 +148,48 @@ class database_model:
         find_existing = session.query(model.job_namespace).\
             filter(model.job_namespace.name == "lsblk")
         if find_existing.count() == 0:
-            self.log.warning("Update_Add missing update_type")
+            self.log.warning("job_def_Add missing update_type")
             return
         id_job_namespace = int(find_existing.one().id)
-        find_existing = session.query(model.Update).\
+        find_existing = session.query(model.job_def).\
             filter(model.job_namespace.id == id_job_namespace)
         if find_existing.count() == 0:
             self.log.info("no update found")
-            newUpdate = model.Update()
-            newUpdate.created = datetime.datetime.now()
-            newUpdate.expires = datetime.datetime.now()
-            newUpdate.outputjson = None
-            newUpdate.returncode = None
-            newUpdate.fk_update = id_job_namespace
-            session.add(newUpdate)
+            newjob_def = model.job_def()
+            newjob_def.created = datetime.datetime.now()
+            newjob_def.expires = datetime.datetime.now()
+            newjob_def.outputjson = None
+            newjob_def.returncode = None
+            newjob_def.fk_update = id_job_namespace
+            session.add(newjob_def)
             session.commit()
-        find_existing = session.query(model.Update).\
+        find_existing = session.query(model.job_def).\
             filter(model.job_namespace.id == id_job_namespace)
         
-        id_Update =None
+        id_job_def =None
         for item in find_existing:
-            id_Update = item.id
+            id_job_def = item.id
         
         
         find_existing = session.query(model.job_execution).\
-            filter(model.Update.id == id_Update).\
-            filter(model.job_execution.fk_update == model.Update.id)
+            filter(model.job_def.id == id_job_def).\
+            filter(model.job_execution.fk_update == model.job_def.id)
         if find_existing.count() == 0:
             self.log.warning("")
-            find_update = session.query(model.Update).\
+            find_update = session.query(model.job_def).\
                 filter(model.job_namespace.name == "lsblk").\
-                filter(model.Update.fk_type == model.job_namespace.id)
+                filter(model.job_def.fk_type == model.job_namespace.id)
             if find_update.count() == 0:
                 pass
-            newUpdate = model.job_execution()
-            newUpdate.created = datetime.datetime.now()
-            newUpdate.expires = datetime.datetime.now()
-            newUpdate.outputjson = None
-            newUpdate.returncode = None
-            newUpdate.fk_update = id_job_namespace
-            newUpdate.uuid = str(uuid.uuid1())
-            newUpdate.triggers = '[]'
-            session.add(newUpdate)
+            newjob_def = model.job_execution()
+            newjob_def.created = datetime.datetime.now()
+            newjob_def.expires = datetime.datetime.now()
+            newjob_def.outputjson = None
+            newjob_def.returncode = None
+            newjob_def.fk_update = id_job_namespace
+            newjob_def.uuid = str(uuid.uuid1())
+            newjob_def.triggers = '[]'
+            session.add(newjob_def)
             session.commit()
             find_existing = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == "lsblk")
@@ -207,9 +207,9 @@ class database_model:
         session = kwargs.get('session', None)
         if session == None:
             session = self.SessionFactory()
-        find_existing = session.query(model.job_namespace,model.Update,model.job_execution).\
+        find_existing = session.query(model.job_namespace,model.job_def,model.job_execution).\
             filter(model.job_execution.expires < datetime.datetime.now()).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             filter(model.job_execution.fk_update == model.job_namespace.id)
         if find_existing.count == 0:
             self.log.error("debug.job_execution_Run 0")
@@ -225,7 +225,7 @@ class database_model:
                 
                 session.add(item_type)
                 session.commit()
-                self.Update_Add(update_type="lsblkrc",)
+                self.job_def_Add(update_type="lsblkrc",)
             if item_type.name == "":
                 pass
         session.commit()

@@ -143,8 +143,8 @@ class job_runner(bass_job_runner):
                 gatheredInfomation[keyValue[0]] = keyValue[1]
 
         #log.debug ("doing=%s" % gatheredInfomation)
+        self.outputjson = json.dumps(gatheredInfomation,sort_keys=True, indent=4)
         return gatheredInfomation
-
 
 
 

@@ -15,7 +15,7 @@ def job_namespace_Add(*args, **kwargs):
         return
     session = kwargs.get('session', None)
     if session == None:
-        log.warning("Update_Add missing name")
+        log.warning("job_def_Add missing name")
         return
     find_existing = session.query(model.job_namespace).\
             filter(model.job_namespace.name == name)
@@ -26,20 +26,20 @@ def job_namespace_Add(*args, **kwargs):
     session.add(newjob_namespace)
     session.commit()
 
-def Update_Add(*args, **kwargs):
-    log = logging.getLogger("Update_Add")
+def job_def_Add(*args, **kwargs):
+    log = logging.getLogger("job_def_Add")
     update_type = kwargs.get('update_type', None)
     if update_type == None:
-        log.warning("Update_Add missing update_type")
+        log.warning("job_def_Add missing update_type")
         return
     
     name = kwargs.get('name', None)
     if name == None:
-        log.warning("Update_Add missing name")
+        log.warning("job_def_Add missing name")
         return
     session = kwargs.get('session', None)
     if session == None:
-        log.warning("Update_Add missing name")
+        log.warning("job_def_Add missing name")
         return
     find_existing = session.query(model.job_execution).\
             filter(model.job_namespace.name == update_type)
@@ -145,7 +145,9 @@ class job_runner():
         #self.log.error("self.session=%s" % self.session)
         job_namespace_Add(session=self.session,
              name = self.job_class)
-        Update_Add(session=self.session,
+             
+        
+        job_def_Add(session=self.session,
              update_type = self.job_class,
              name = self.job_class,
              cmdln_template = self.cmdln_template
@@ -156,7 +158,7 @@ class job_runner():
              cmdln_template = self.cmdln_template,
              source = "ssss",
              dest = "dddddd",
-             sk_uuid = str(uuid.uuid4())
+             sk_uuid = str(self.uuid_execution)
         )
         
         

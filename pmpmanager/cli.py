@@ -42,9 +42,10 @@ class CliInput:
         actions = output["pmpman.cli.actions"]
         self.log.debug( "pmpman.cli.actions=%s" % actions )
         if "pmpman.cli.actions" in actions:
-            print actions
+            pass
         if 'pmpman.action.partition.list' in actions:
-            print actions
+            pass
+
         if output == None:
             self.log.error("get_parrameters_cli_init:failed")
             return
@@ -92,12 +93,12 @@ class ProcesHandler:
         #self.database.job_namespace_Add(update_type="lsblk",)
         #self.database.job_namespace_Add(update_type="udevadm_info")
         #self.database.job_namespace_Run()
-        #self.database.Update_Run()
+        #self.database.job_def_Run()
         #self.database.job_execution_Run()
-        #self.database.Update_Add(update_type="udevadm_info",
+        #self.database.job_def_Add(update_type="udevadm_info",
         #   cammand_line = "" )
 
-        #self.database.Update_Run(update_type="lsblk")
+        #self.database.job_def_Run(update_type="lsblk")
         #self.database.job_execution_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
         QM.session = self.database.SessionFactory()
@@ -106,12 +107,14 @@ class ProcesHandler:
                 cmdln_template = "lsblk",
                 cmdln_paramters = "{}",
                 name = "lsblk",
+                uuid = "6d7141d5-e1ee-4ff6-a778-10803521c8a2",
                 session = session
             )
         QM.job_persist(job_type = "lsblk_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "lsblk_query",
+                uuid = "c297b566-089d-4895-a8c2-a9cc37767174",
                 session = session,
             )
 
@@ -119,6 +122,7 @@ class ProcesHandler:
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "lsblk_query",
+                uuid = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63",
                 session = session,
             )
 
@@ -132,19 +136,21 @@ class ProcesHandler:
                 session = session,
             )
 
-
-        QM.queue_dequeue(session = session)
-        QM.queue_dequeue(session = session)
+        quelength = 100
+        while quelength > 0:
+            output = QM.queue_dequeue(session = session)
+            print output
+        
         self.log.debug("cb_pmpman_block_scan:finished")
     def cb_pmpman_block_list(self,caller=None):
         self.log.debug("cb_pmpman_block_list")
         self.connect_db()
         session = self.database.Session()
 
-        find_Update = session.query(model.Block)
+        find_job_def = session.query(model.Block)
 
 
-        if find_Update.count() == 0:
+        if find_job_def.count() == 0:
             self.log.info("No blocks found")
 
 

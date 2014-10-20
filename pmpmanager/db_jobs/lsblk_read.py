@@ -39,46 +39,49 @@ class job_runner(bass_job_runner):
 
         session = kwargs.get('session', None)
         if session == None:
-            self.log.warning("Update_Add missing name")
+            self.log.warning("job_def_Add missing name")
             return
         #self.log.warning("running")
-        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
-            filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+        instance_query = session.query(model.job_namespace,model.job_def,model.job_execution).\
+            filter(model.job_execution.fk_update == model.job_def.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             order_by(model.job_execution.created)
         #self.log.warning("count=%s" % instance_query.count())
         #for item in instance_query:
         #    print item[0].name
 
-        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
-            filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+        instance_query = session.query(model.job_namespace,model.job_def,model.job_execution).\
+            filter(model.job_execution.fk_update == model.job_def.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             filter(model.job_namespace.name == "lsblk_query").\
             order_by(model.job_execution.created)
-        #self.log.warning("count=%s" % instance_query.count())
+        self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
             job_namespace = instance[0]
-            Update = instance[1]
+            job_def = instance[1]
             job_execution = instance[2]
             #self.log.error("job_namespace.name=%s" % job_namespace.name)
             #self.log.warning("sss=%s" % (job_execution.outputjson))
             if job_execution.outputjson == None:
+                self.log.warning("sss=%s" % (job_execution.outputjson))
                 continue
             read_output = json.loads(job_execution.outputjson)
             if read_output == None:
+                self.log.error("Failed to laod JSON")
                 continue
             for item in read_output:
                 print item
-                dest_query = session.query(model.job_namespace,model.Update).\
-                    filter(model.Update.fk_type == model.job_namespace.id).\
+                dest_query = session.query(model.job_namespace,model.job_def).\
+                    filter(model.job_def.fk_type == model.job_namespace.id).\
                     filter(model.job_namespace.name == "udev_query")
-                new_cmdln = "udevadm info -q all -n /dev/%s" % (key)
-
+                key = "/deev/sda"
+                new_cmdln = "udevadm info -q all -n %s" % (key)
+                self.log.debug("cmd=%s" % new_cmdln)
                 for item in dest_query:
                     job_namespace = item[0]
-                    Update = item[1]
-                    newjob_execution = model.UpdateInstance()
-                    newjob_execution.fk_update = Update.id
+                    job_def = item[1]
+                    newjob_execution = model.job_execution()
+                    newjob_execution.fk_update = job_def.id
                     newjob_execution.name = "udev_query"
                     newjob_execution.created = datetime.datetime.now()
                     newjob_execution.expires = datetime.datetime.now()
@@ -92,9 +95,9 @@ class job_runner(bass_job_runner):
             #session.delete(job_execution)
             session.commit()
 
-        instance_query = session.query(model.job_namespace,model.Update,model.job_execution).\
-            filter(model.job_execution.fk_update == model.Update.id).\
-            filter(model.Update.fk_type == model.job_namespace.id).\
+        instance_query = session.query(model.job_namespace,model.job_def,model.job_execution).\
+            filter(model.job_execution.fk_update == model.job_def.id).\
+            filter(model.job_def.fk_type == model.job_namespace.id).\
             filter(model.job_namespace.name == "lsblk_read").\
             order_by(model.job_execution.created)
         for instance in instance_query:

@@ -21,7 +21,17 @@ class job_que_man(object):
         self.job_runner = db_job_runner.job_runner()
         self.job_runner.session = self.session
         
+    def initialise(self, *args, **kwargs) : 
         
+        session = kwargs.get('initialise', None)
+        if session == None:
+            session = self.session
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.session = session
+        for i in new_job_runner.job_classes.keys():
+            new_job_runner.job_class = i
+            new_job_runner.save()
+                
         
         
     def queue_length(self):
@@ -34,15 +44,15 @@ class job_que_man(object):
         if session == None:
             session = self.session
         
-        find_Update = session.query(model.job_execution,model.Update,model.job_namespace).\
-                filter(model.job_execution.fk_update == model.Update.id).\
-                filter(model.Update.fk_type == model.job_namespace.id).\
+        find_job_def = session.query(model.job_execution,model.job_def,model.job_namespace).\
+                filter(model.job_execution.fk_update == model.job_def.id).\
+                filter(model.job_def.fk_type == model.job_namespace.id).\
                 order_by(model.job_execution.created)
-        self.log.debug('find_Update.count=%s' % find_Update.count())
-        for item in find_Update:
+        self.log.debug('find_job_def.count=%s' % find_job_def.count())
+        for item in find_job_def:
             job_execution = item[0]
             job_namespace = item[2]
-            Update =  item[1]
+            job_def =  item[1]
             
             tridggeres = json.loads ( job_execution.triggers)
             #self.log.error('tridggeres=%s' % tridggeres)
@@ -50,8 +60,8 @@ class job_que_man(object):
             for trig in tridggeres:
                 self.log.error('trig=%s' % trig)
                 
-                update_query = session.query(model.Update).\
-                    filter(model.Update.fk_type == model.job_namespace.id).\
+                update_query = session.query(model.job_def).\
+                    filter(model.job_def.fk_type == model.job_namespace.id).\
                     filter(model.job_namespace.name == trig)
                 self.log.error('count=%s' % update_query.count())
                 for target in update_query:
@@ -81,14 +91,15 @@ class job_que_man(object):
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
-        find_Update = session.query(model.job_execution,model.job_namespace).\
+        find_job_def = session.query(model.job_execution,model.job_namespace).\
                 filter(model.job_execution.expired == None).\
                 filter(model.job_execution.returncode == None).\
                 order_by(model.job_execution.created)
-        #self.log.error('queue_dequeue=%s' % find_Update.count())
+        #self.log.error('queue_dequeue=%s' % find_job_def.count())
         
-        for item in find_Update:
+        for item in find_job_def:
             job_execution = item[0]
+            print job_execution.created
             job_namespace = item[1]
             new_job_runner = db_job_runner.job_runner()
             new_job_runner.session = session
@@ -108,23 +119,15 @@ class job_que_man(object):
             
             session.add(job_execution)
             session.commit()
+            return True
         
-        
-        self.queue_read(session = session)
+
             
-        return None
+        return False
         
         
         
-    def initialise(self, *args, **kwargs) : 
-        session = kwargs.get('initialise', None)
-        if session == None:
-            session = self.session
-        new_job_runner = db_job_runner.job_runner()
-        new_job_runner.session = session
-        for i in new_job_runner.job_classes.keys():
-            new_job_runner.job_class = i
-            new_job_runner.save()
+
             
     def jobtype_available(self, *args, **kwargs):
         session = kwargs.get('jobtype_available', None)
@@ -172,6 +175,7 @@ class job_que_man(object):
             return
         job_uuid = kwargs.get('uuid', None)
         if job_uuid  == None:
+            ssss
             self.log.debug("No UUID specified")
             job_uuid = str(uuid.uuid4())
        
@@ -189,43 +193,43 @@ class job_que_man(object):
         
         ret_job_type = find_job_namespace.one()
         
-        find_Update = session.query(model.Update).\
-                filter(model.Update.fk_type == ret_job_type.id).\
+        find_job_def = session.query(model.job_def).\
+                filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
-                filter(model.Update.cmdln_template == cmdln_template).\
-                filter(model.Update.cmdln_paramters == cmdln_paramters)
+                filter(model.job_def.cmdln_template == cmdln_template).\
+                filter(model.job_def.cmdln_paramters == cmdln_paramters)
                 
-        if find_Update.count() == 0:
-            newUpdate = model.Update()
-            newUpdate.fk_type = ret_job_type.id
-            newUpdate.name = name
-            newUpdate.cmdln_template = cmdln_template
-            newUpdate.cmdln_paramters = cmdln_paramters
-            newUpdate.uuid = job_uuid
-            session.add(newUpdate)
+        if find_job_def.count() == 0:
+            newjob_def = model.job_def()
+            newjob_def.fk_type = ret_job_type.id
+            newjob_def.name = name
+            newjob_def.cmdln_template = cmdln_template
+            newjob_def.cmdln_paramters = cmdln_paramters
+            newjob_def.uuid = job_uuid
+            session.add(newjob_def)
             session.commit()
-            find_Update = session.query(model.Update).\
-                filter(model.Update.fk_type == ret_job_type.id).\
+            find_job_def = session.query(model.job_def).\
+                filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
-                filter(model.Update.cmdln_template == cmdln_template).\
-                filter(model.Update.cmdln_paramters == cmdln_paramters)
+                filter(model.job_def.cmdln_template == cmdln_template).\
+                filter(model.job_def.cmdln_paramters == cmdln_paramters)
                 
             
-        if find_Update.count() != 1:
+        if find_job_def.count() != 1:
             self.log.error("Some thign bad happened")
 
-        ret_job_details = find_Update.one()
+        ret_job_details = find_job_def.one()
         
         
-        find_Update = session.query(model.job_execution).\
-                filter(model.job_execution.fk_update == model.Update.id).\
-                filter(model.Update.fk_type == ret_job_type.id).\
+        find_job_def = session.query(model.job_execution).\
+                filter(model.job_execution.fk_update == model.job_def.id).\
+                filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
-                filter(model.Update.cmdln_template == cmdln_template).\
-                filter(model.Update.cmdln_paramters == cmdln_paramters)
+                filter(model.job_def.cmdln_template == cmdln_template).\
+                filter(model.job_def.cmdln_paramters == cmdln_paramters)
                 
         
-        if find_Update.count() == 0:
+        if find_job_def.count() == 0:
             newjob_execution = model.job_execution()
             newjob_execution.fk_update == ret_job_details.id
             newjob_execution.name = name
@@ -239,8 +243,8 @@ class job_que_man(object):
             session.add(newjob_execution)
             session.commit()
 def job_execution_Run(self,session):
-    find_existing = session.query(model.job_namespace,model.Update,model.job_execution).\
+    find_existing = session.query(model.job_namespace,model.job_def,model.job_execution).\
         filter(model.job_execution.expires < datetime.datetime.now()).\
-        filter(model.Update.fk_type == model.job_namespace.id).\
+        filter(model.job_def.fk_type == model.job_namespace.id).\
         filter(model.job_execution.fk_update == model.job_namespace.id)
     return find_existing
