@@ -112,11 +112,11 @@ def updatdatabase(session=None):
             find_existing = session.query(model.Update).\
                 filter(model.Update.fk_type == id_update_type)
         id_update = int(find_existing.first().id)
-        find_existing = session.query(model.UpdateInstance).\
-            filter(model.UpdateInstance.fk_update == id_update)
+        find_existing = session.query(model.job_execution).\
+            filter(model.job_execution.fk_update == id_update)
 
         if find_existing.count() == 0:
-            newUpdate = model.UpdateInstance()
+            newUpdate = model.job_execution()
             newUpdate.fk_update = id_update
             newUpdate.cmdln = "here is is"
             newUpdate.created = datetime.datetime.now()
@@ -125,11 +125,11 @@ def updatdatabase(session=None):
             session.commit()
             
     for device_key in blocks_discoverd:
-        find_existing = session.query(model.UpdateInstance).\
+        find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             filter("lsblk" == model.UpdateType.name).\
-            filter(model.UpdateInstance.fk_update == model.UpdateType.id)
+            filter(model.job_execution.fk_update == model.UpdateType.id)
         for i in find_existing:
             log.debug("i=%s"  % (i))            
         #log.debug("device_details=%s"  % (device_details))
@@ -188,11 +188,11 @@ def updatdatabase(session=None):
         
             
     for device_key in blocks_discoverd:
-        find_existing = session.query(model.UpdateInstance).\
+        find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             filter("lsblk" == model.UpdateType.name).\
-            filter(model.UpdateInstance.fk_update == model.UpdateType.id)
+            filter(model.job_execution.fk_update == model.UpdateType.id)
         
     for device_key in blocks_lost:
         log.warning('Code not complete')
