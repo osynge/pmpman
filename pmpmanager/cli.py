@@ -39,7 +39,6 @@ class CliInput:
     def get_parrameters_cli_init(self):
         output = get_parrameters_cli_init(self.defaults)
         actions = output["pmpman.cli.actions"]
-        print actions
         if "pmpman.cli.actions" in actions:
             print actions
         if 'pmpman.action.partition.list' in actions:
