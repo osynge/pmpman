@@ -75,7 +75,8 @@ class job_runner(bass_job_runner):
         lkfields = ",".join(wantedFields)
         command = "lsblk  --output %s  --pairs" % (lkfields)
         #log.debug("command=%s" % (command))
-        processRc,stdout,stderr = runpreloadcommand(command,10)
+        
+        processRc,stdout,stderr = self.execuet_cmdln(cmdln = command, timeout=10)
         #log.debug("stdout=%s" % (stdout))
         output = {}
         for line in stdout.split("\n"):
