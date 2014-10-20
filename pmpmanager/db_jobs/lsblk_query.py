@@ -11,6 +11,9 @@ import datetime
 import pmpmanager.db_devices as model
 from base_calls import job_runner as bass_job_runner
 
+lsblk_wantedFields = ["NAME","KNAME","MOUNTPOINT","PARTUUID","SERIAL","FSTYPE","RM","SIZE","FSTYPE","UUID","OWNER","GROUP","MODE","WWN","VENDOR","MAJ:MIN"]
+cmdln = "lsblk  --output %s  --pairs" % (",".join(lsblk_wantedFields))
+
 
 def runpreloadcommand(cmd,timeout):
     process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -63,6 +66,14 @@ class job_runner(bass_job_runner):
             del self._session
         return locals()
     
+    @Property
+    def cmdln():
+        doc = "cmdlin property"
+
+        def fget(self):
+            return cmdln
+
+        return locals()
     
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)
@@ -71,12 +82,10 @@ class job_runner(bass_job_runner):
             return
 
 
-        wantedFields = ["NAME","KNAME","MOUNTPOINT","PARTUUID","SERIAL","FSTYPE","RM","SIZE","FSTYPE","UUID","OWNER","GROUP","MODE","WWN","VENDOR","MAJ:MIN"]
-        lkfields = ",".join(wantedFields)
-        command = "lsblk  --output %s  --pairs" % (lkfields)
+        
         #log.debug("command=%s" % (command))
         
-        processRc,stdout,stderr = self.execuet_cmdln(cmdln = command, timeout=10)
+        processRc,stdout,stderr = self.execuet_cmdln(cmdln = self.cmdln, timeout=10)
         #log.debug("stdout=%s" % (stdout))
         output = {}
         for line in stdout.split("\n"):
