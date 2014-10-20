@@ -85,12 +85,12 @@ class ProcesHandler:
         #self.database.UpdateType_Add(update_type="udevadm_info")
         #self.database.UpdateType_Run()
         #self.database.Update_Run()
-        #self.database.UpdateInstance_Run()
+        #self.database.job_execution_Run()
         #self.database.Update_Add(update_type="udevadm_info",
         #   cammand_line = "" )
 
         #self.database.Update_Run(update_type="lsblk")
-        #self.database.UpdateInstance_Run(update_type="lsblk")
+        #self.database.job_execution_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
         QM.session = self.database.SessionFactory()
         QM.initialise()

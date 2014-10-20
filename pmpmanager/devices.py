@@ -124,7 +124,7 @@ class database_model:
             self.log.warning("Update_Add missing name")
             return
         session = self.SessionFactory()
-        find_existing = session.query(model.UpdateInstance).\
+        find_existing = session.query(model.job_execution).\
                 filter(model.UpdateType.name == update_type)
         if find_existing.count == 0:
             newUpdateType = model.UpdateType()
@@ -171,9 +171,9 @@ class database_model:
             id_Update = item.id
         
         
-        find_existing = session.query(model.UpdateInstance).\
+        find_existing = session.query(model.job_execution).\
             filter(model.Update.id == id_Update).\
-            filter(model.UpdateInstance.fk_update == model.Update.id)
+            filter(model.job_execution.fk_update == model.Update.id)
         if find_existing.count() == 0:
             self.log.warning("")
             find_update = session.query(model.Update).\
@@ -181,7 +181,7 @@ class database_model:
                 filter(model.Update.fk_type == model.UpdateType.id)
             if find_update.count() == 0:
                 pass
-            newUpdate = model.UpdateInstance()
+            newUpdate = model.job_execution()
             newUpdate.created = datetime.datetime.now()
             newUpdate.expires = datetime.datetime.now()
             newUpdate.outputjson = None
@@ -202,17 +202,17 @@ class database_model:
         
 
         
-    def UpdateInstance_Run_old(self, *args, **kwargs):
-        self.log.debug('UpdateInstance_Run')
+    def job_execution_Run_old(self, *args, **kwargs):
+        self.log.debug('job_execution_Run')
         session = kwargs.get('session', None)
         if session == None:
             session = self.SessionFactory()
-        find_existing = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
-            filter(model.UpdateInstance.expires < datetime.datetime.now()).\
+        find_existing = session.query(model.UpdateType,model.Update,model.job_execution).\
+            filter(model.job_execution.expires < datetime.datetime.now()).\
             filter(model.Update.fk_type == model.UpdateType.id).\
-            filter(model.UpdateInstance.fk_update == model.UpdateType.id)
+            filter(model.job_execution.fk_update == model.UpdateType.id)
         if find_existing.count == 0:
-            self.log.error("debug.UpdateInstance_Run 0")
+            self.log.error("debug.job_execution_Run 0")
         for item in find_existing:
             item_type = item[0]
             update_instance = item[1]
@@ -230,6 +230,6 @@ class database_model:
                 pass
         session.commit()
         
-    def UpdateInstance_Run(self, *args, **kwargs):
+    def job_execution_Run(self, *args, **kwargs):
         pass
         

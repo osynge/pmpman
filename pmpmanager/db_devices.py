@@ -66,7 +66,7 @@ class Update(Base):
 
 
         
-class UpdateInstance(Base):
+class job_execution(Base):
     """stores job runs.
     """
     __tablename__ = 'job_scheduling'
