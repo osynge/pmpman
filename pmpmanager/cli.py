@@ -38,6 +38,12 @@ class CliInput:
 
     def get_parrameters_cli_init(self):
         output = get_parrameters_cli_init(self.defaults)
+        actions = output["pmpman.cli.actions"]
+        print actions
+        if "pmpman.cli.actions" in actions:
+            print actions
+        if 'pmpman.action.partition.list' in actions:
+            print actions
         if output == None:
             self.log.error("get_parrameters_cli_init:failed")
             return
@@ -122,11 +128,20 @@ class ProcesHandler:
         
         QM.queue_dequeue(session = session)
         QM.queue_dequeue(session = session)
+
+    def cb_pmpman_block_list(self,caller=None):
+        self.log.debug("cb_pmpman_action_list")
+        self.connect_db()
+        session = self.database.Session()
+
+
     def Connect(self):
+        """This function sets callbacks"""
         
         parmetes =  {
             'pmpman.action.udev' : [ { 'callback' : self.cb_pmpman_action_udev } ],
             'pmpman.action.partition.list' : [ { 'callback' : self.cb_pmpman_action_list } ],
+            'pmpman.action.block.list' : [ { 'callback' : self.cb_pmpman_block_list } ],
             }
         self.UI.callbacks_set(parmetes)
         
