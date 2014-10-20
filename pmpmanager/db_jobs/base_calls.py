@@ -3,6 +3,10 @@ import subprocess
 import time
 import pmpmanager.db_devices as model
 
+
+def Property(func):
+    return property(**func())
+
 def UpdateType_Add(*args, **kwargs):
     log = logging.getLogger("UpdateType_Add")
     name = kwargs.get('name', None)
@@ -49,6 +53,34 @@ def Update_Add(*args, **kwargs):
             filter(model.UpdateType.name == name)
         log.warning( find_existing.one())
 
+
+
+def Links_store(*args, **kwargs):
+    log = logging.getLogger("Links_store")
+    update_type = kwargs.get('update_type', None)
+    if update_type == None:
+        log.warning("missing update_type")
+        return
+    
+    sk_uuid = kwargs.get('sk_uuid', None)
+    if sk_uuid == None:
+        log.warning("missing sk_uuid")
+        return
+    session = kwargs.get('session', None)
+    if session == None:
+        log.warning("missing name")
+        return
+    find_existing = session.query(model.UpdateInstance).\
+            filter(model.UpdateType.name == update_type)
+    if find_existing.count == 0:
+        newUpdateType = model.UpdateType()
+        newUpdateType.name = name
+        session.add(newUpdateType)
+        session.commit()
+        session = self.SessionFactory()
+        find_existing = session.query(model.UpdateType).\
+            filter(model.UpdateType.name == name)
+        log.warning( find_existing.one())
 def runpreloadcommand(cmd,timeout):
     process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     processRc = None
@@ -99,5 +131,41 @@ class job_runner():
              name = self.job_class,
              cmdln_template = self.cmdln_template
              )
+        Links_store(session=self.session,
+             update_type = self.job_class,
+             name = self.job_class,
+             cmdln_template = self.cmdln_template
+        )
+        
+        
+        
     def run(self, *args, **kwargs):
         pass
+    @Property
+    def cmdln():
+        doc = "Remote upload prefix"
+
+        def fget(self):
+            return self._session
+
+        def fset(self, value):
+            self._session = value
+            
+        def fdel(self):
+            del self._session
+        return locals()
+    
+    @Property
+    def arguments():
+        doc = "Remote upload prefix"
+
+        def fget(self):
+            return self._session
+
+        def fset(self, value):
+            self._session = value
+            
+        def fdel(self):
+            del self._session
+        return locals()
+    

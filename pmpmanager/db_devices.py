@@ -45,7 +45,7 @@ class Update(Base):
     cmdln_paramters = Column(String(1024),unique=False)
     latest = Column(Integer,nullable = True)
     reocuring = Column(Integer,nullable = False)
-    
+    uuid = Column(String(30),unique=False,nullable = False)
     lifetime = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
         latest = kwargs.get('latest', None)
@@ -116,6 +116,36 @@ class UpdateInstance(Base):
             self.cmdln = cammand_line
         self.triggers = kwargs.get('triggers', None)
         self.trig_parameters = kwargs.get('trig_parameters', "[]")
+        this_uuid = kwargs.get('uuid', None)
+        if this_uuid == None:
+            self.uuid = str(uuid.uuid4())
+        else:
+            self.uuid = str(this_uuid)
+
+
+class Job_Triggers(Base):
+    """stores job runs.
+    """
+    __tablename__ = 'job_triggers'
+    id = Column(Integer, primary_key=True)
+    sk_uuid = Column(String(30),unique=False,nullable = False)
+    source = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    dest = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    
+    def __init__(self, *args, **kwargs):
+        sk_uuid = kwargs.get('sk_uuid', None)
+        if sk_uuid != None:
+           self.sk_uuid = sk_uuid
+        source = kwargs.get('source', None)
+        if source != None:
+           self.source = source
+        dest = kwargs.get('dest', None)
+        if dest != None:
+           self.dest = dest
+        
+
+
+
         
 class Block(Base):
     __tablename__ = 'Block'

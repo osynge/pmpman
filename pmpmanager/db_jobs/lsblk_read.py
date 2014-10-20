@@ -39,21 +39,36 @@ class job_runner(bass_job_runner):
         
         session = kwargs.get('session', None)
         if session == None:
-            log.warning("Update_Add missing name")
+            self.log.warning("Update_Add missing name")
             return
+        self.log.warning("running")
         instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
             filter(model.UpdateInstance.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
-            filter(model.UpdateType.name == "lsblk_read").\
             order_by(model.UpdateInstance.created)
+        self.log.warning("count=%s" % instance_query.count())
+        for item in instance_query:
+            print item[0].name
+        
+        instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
+            filter(model.UpdateInstance.fk_update == model.Update.id).\
+            filter(model.Update.fk_type == model.UpdateType.id).\
+            filter(model.UpdateType.name == "lsblk_query").\
+            order_by(model.UpdateInstance.created)
+        self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
             UpdateType = instance[0]
             Update = instance[1]
             UpdateInstance = instance[2]
             self.log.error("UpdateType.name=%s" % UpdateType.name)
-            self.log.warning("ffffdddfffffffffffffUpdate_Add missing name")
+            self.log.warning("sss=%s" % (UpdateInstance.outputjson))
+            if UpdateInstance.outputjson == None:
+                continue
             read_output = json.loads(UpdateInstance.outputjson)
-            for key in read_output.keys():
+            if read_output == None:
+                continue
+            for item in read_output:
+                print item
                 dest_query = session.query(model.UpdateType,model.Update).\
                     filter(model.Update.fk_type == model.UpdateType.id).\
                     filter(model.UpdateType.name == "udev_query")
@@ -74,7 +89,14 @@ class job_runner(bass_job_runner):
                     newUpdateInstance.cmdln = new_cmdln        
                     session.add(newUpdateInstance)
                     session.commit()
-            session.delete(UpdateInstance)
+            #session.delete(UpdateInstance)
             session.commit()
         
+        instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
+            filter(model.UpdateInstance.fk_update == model.Update.id).\
+            filter(model.Update.fk_type == model.UpdateType.id).\
+            filter(model.UpdateType.name == "lsblk_read").\
+            order_by(model.UpdateInstance.created)
+        for instance in instance_query:
+            print instance
 

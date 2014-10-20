@@ -23,7 +23,6 @@ import db_jobs.lsblk_query as job_runner_lsblk_query
 import db_jobs.lsblk_read as job_runner_lsblk_read
 
 import db_jobs.udev_query as job_runner_udev_query
-import db_jobs.udev_query as job_runner_udev_read
 import db_jobs.udev_read as job_runner_udev_read
  
    
@@ -39,6 +38,7 @@ class job_runner(object):
         self.job_classes = { 
             "kname_new" :  job_runner_udev_read,
             "udev_query" : job_runner_udev_query ,
+            "lsblk_query" : job_runner_lsblk_query,
             "lsblk" : job_runner_lsblk_query,
             "udev_read" : job_runner_udev_read,
             "lsblk_read" : job_runner_lsblk_read,

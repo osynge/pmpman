@@ -33,20 +33,19 @@ class job_que_man(object):
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
+        
         find_Update = session.query(model.UpdateInstance,model.Update,model.UpdateType).\
-                filter(model.UpdateInstance.finshed != None).\
-                filter(model.UpdateInstance.returncode != None).\
                 filter(model.UpdateInstance.fk_update == model.Update.id).\
                 filter(model.Update.fk_type == model.UpdateType.id).\
                 order_by(model.UpdateInstance.created)
-        #self.log.error('queue_dequeue=%s' % find_Update.count())
+        self.log.error('queue_dequeue=%s' % find_Update.count())
         for item in find_Update:
             UpdateInstance = item[0]
             UpdateType = item[2]
             Update =  item[1]
             
             tridggeres = json.loads ( UpdateInstance.triggers)
-            #self.log.error('tridggeres=%s' % tridggeres)
+            self.log.error('tridggeres=%s' % tridggeres)
             params = json.loads ( UpdateInstance.trig_parameters)
             for trig in tridggeres:
                 self.log.error('trig=%s' % trig)
@@ -171,6 +170,13 @@ class job_que_man(object):
         if session == None:
             self.log.warning("unset self.session")
             return
+        job_uuid = kwargs.get('uuid', None)
+        if job_uuid  == None:
+            self.log.debug("No UUID specified")
+            job_uuid = str(uuid.uuid4())
+       
+        
+        
         find_UpdateType = session.query(model.UpdateType).\
                 filter(model.UpdateType.name == job_type)
         if find_UpdateType.count() == 0:
@@ -195,7 +201,7 @@ class job_que_man(object):
             newUpdate.name = name
             newUpdate.cmdln_template = cmdln_template
             newUpdate.cmdln_paramters = cmdln_paramters
-            
+            newUpdate.uuid = job_uuid
             session.add(newUpdate)
             session.commit()
             find_Update = session.query(model.Update).\

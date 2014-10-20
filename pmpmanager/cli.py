@@ -84,35 +84,35 @@ class ProcesHandler:
         #self.database.Update_Add(update_type="udevadm_info",
         #   cammand_line = "" )
         
-        self.database.Update_Run(update_type="lsblk")
-        self.database.UpdateInstance_Run(update_type="lsblk")
+        #self.database.Update_Run(update_type="lsblk")
+        #self.database.UpdateInstance_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
         QM.session = self.database.SessionFactory()
         QM.initialise()
-        QM.job_persist(job_type = "lsblk",
+        QM.job_persist(job_type = "lsblk_query",
                 cmdln_template = "lsblk",
                 cmdln_paramters = "{}",
                 name = "lsblk",
                 session = session
             )
-        QM.job_persist(job_type = "kname_new",
+        QM.job_persist(job_type = "lsblk_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
-                name = "kname_new",
+                name = "lsblk_query",
                 session = session,
             )
             
         QM.job_persist(job_type = "udev_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
-                name = "kname_new",
+                name = "lsblk_query",
                 session = session,
             )
             
         
             
         
-        available = QM.jobtype_available(job_type = "kname_new",
+        available = QM.jobtype_available(job_type = "lsblk_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "udev_query",
@@ -121,7 +121,7 @@ class ProcesHandler:
             
         
         QM.queue_dequeue(session = session)
-
+        QM.queue_dequeue(session = session)
     def Connect(self):
         
         parmetes =  {
