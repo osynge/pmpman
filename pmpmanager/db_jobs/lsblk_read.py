@@ -33,7 +33,7 @@ class job_runner(bass_job_runner):
     
     def run(self, *args, **kwargs):
         
-        self.log.debug("self.job_class=%s" % self.job_class)
+        #self.log.debug("self.job_class=%s" % self.job_class)
         self.triggers = json.dumps([],sort_keys=True, indent=4)
         self.trig_parameters = json.dumps([],sort_keys=True, indent=4)
         
@@ -41,27 +41,27 @@ class job_runner(bass_job_runner):
         if session == None:
             self.log.warning("Update_Add missing name")
             return
-        self.log.warning("running")
+        #self.log.warning("running")
         instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
             filter(model.UpdateInstance.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             order_by(model.UpdateInstance.created)
-        self.log.warning("count=%s" % instance_query.count())
-        for item in instance_query:
-            print item[0].name
+        #self.log.warning("count=%s" % instance_query.count())
+        #for item in instance_query:
+        #    print item[0].name
         
         instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
             filter(model.UpdateInstance.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             filter(model.UpdateType.name == "lsblk_query").\
             order_by(model.UpdateInstance.created)
-        self.log.warning("count=%s" % instance_query.count())
+        #self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
             UpdateType = instance[0]
             Update = instance[1]
             UpdateInstance = instance[2]
-            self.log.error("UpdateType.name=%s" % UpdateType.name)
-            self.log.warning("sss=%s" % (UpdateInstance.outputjson))
+            #self.log.error("UpdateType.name=%s" % UpdateType.name)
+            #self.log.warning("sss=%s" % (UpdateInstance.outputjson))
             if UpdateInstance.outputjson == None:
                 continue
             read_output = json.loads(UpdateInstance.outputjson)

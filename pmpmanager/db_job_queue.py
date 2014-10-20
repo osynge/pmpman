@@ -30,7 +30,7 @@ class job_que_man(object):
     
     
     def queue_read(self, *args, **kwargs):
-        session = kwargs.get('session', None)
+        session = kwargs.get('queue_read', None)
         if session == None:
             session = self.session
         
@@ -38,14 +38,14 @@ class job_que_man(object):
                 filter(model.UpdateInstance.fk_update == model.Update.id).\
                 filter(model.Update.fk_type == model.UpdateType.id).\
                 order_by(model.UpdateInstance.created)
-        self.log.error('queue_dequeue=%s' % find_Update.count())
+        self.log.debug('find_Update.count=%s' % find_Update.count())
         for item in find_Update:
             UpdateInstance = item[0]
             UpdateType = item[2]
             Update =  item[1]
             
             tridggeres = json.loads ( UpdateInstance.triggers)
-            self.log.error('tridggeres=%s' % tridggeres)
+            #self.log.error('tridggeres=%s' % tridggeres)
             params = json.loads ( UpdateInstance.trig_parameters)
             for trig in tridggeres:
                 self.log.error('trig=%s' % trig)
@@ -117,7 +117,7 @@ class job_que_man(object):
         
         
     def initialise(self, *args, **kwargs) : 
-        session = kwargs.get('session', None)
+        session = kwargs.get('initialise', None)
         if session == None:
             session = self.session
         new_job_runner = db_job_runner.job_runner()
@@ -127,7 +127,7 @@ class job_que_man(object):
             new_job_runner.save()
             
     def jobtype_available(self, *args, **kwargs):
-        session = kwargs.get('session', None)
+        session = kwargs.get('jobtype_available', None)
         if session == None:
             session = self.session
         if session == None:

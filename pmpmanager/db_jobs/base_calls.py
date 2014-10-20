@@ -2,7 +2,7 @@ import logging
 import subprocess
 import time
 import pmpmanager.db_devices as model
-
+import uuid
 
 def Property(func):
     return property(**func())
@@ -55,11 +55,11 @@ def Update_Add(*args, **kwargs):
 
 
 
-def Links_store(*args, **kwargs):
-    log = logging.getLogger("Links_store")
+def store_sk_uuid_job_triggers(*args, **kwargs):
+    log = logging.getLogger("store_sk_uuid_job_triggers")
     source = kwargs.get('source', None)
     if source == None:
-        log.warning("missing source")
+        log.info("missing source")
         return
     dest = kwargs.get('dest', None)
     if dest == None:
@@ -68,23 +68,33 @@ def Links_store(*args, **kwargs):
     
     sk_uuid = kwargs.get('sk_uuid', None)
     if sk_uuid == None:
+        fdsdfdsf
         log.warning("missing sk_uuid")
         return
     session = kwargs.get('session', None)
     if session == None:
         log.warning("missing name")
         return
-    find_existing = session.query(model.UpdateInstance).\
-            filter(model.UpdateType.name == source)
+    find_existing = session.query(model.job_triggers,).\
+            filter(model.job_triggers.source == source).\
+            filter(model.job_triggers.dest == dest)
+            
+            
     if find_existing.count == 0:
         newUpdateType = model.UpdateType()
         newUpdateType.name = name
         session.add(newUpdateType)
         session.commit()
         session = self.SessionFactory()
-        find_existing = session.query(model.UpdateType).\
-            filter(model.UpdateType.name == name)
+        find_existing = session.query(model.job_triggers,).\
+            filter(model.UpdateType.name == source).\
+            filter(model.name == source)
+            
+            
         log.warning( find_existing.one())
+
+
+
 def runpreloadcommand(cmd,timeout):
     process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     processRc = None
@@ -113,6 +123,11 @@ def runpreloadcommand(cmd,timeout):
 class job_runner():
 
     
+    def store_job_triggers(self, *args, **kwargs):
+        
+        return store_sk_uuid_job_triggers(*args,**kwargs)
+    
+    
     def execuet_cmdln(self, *args, **kwargs):
         cmd = kwargs.get('cmdln', 10)
         timeout = kwargs.get('timeout', 10)
@@ -135,10 +150,13 @@ class job_runner():
              name = self.job_class,
              cmdln_template = self.cmdln_template
              )
-        Links_store(session=self.session,
+        self.store_job_triggers(session=self.session,
              update_type = self.job_class,
              name = self.job_class,
-             cmdln_template = self.cmdln_template
+             cmdln_template = self.cmdln_template,
+             source = "ssss",
+             dest = "dddddd",
+             sk_uuid = str(uuid.uuid4())
         )
         
         

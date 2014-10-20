@@ -200,6 +200,10 @@ def get_parrameters_cli_init(defaults):
     p.add_option('-C', '--config-file', action ='store',help='Configuration file.', metavar='CFG_FILE')
     p.add_option('--mark-udev', action ='store',help='Called by udev $name')
     p.add_option('--list-partitions', action ='store_true',help='Called by udev $name')
+    p.add_option('--block-list', action ='store_true',help='Scan All Partitions')
+    p.add_option('--block-scan', action ='store_true',help='Scan All Partitions')
+    
+    
     actions = set()
     requires = set()
     options, arguments = p.parse_args()
@@ -251,7 +255,13 @@ def get_parrameters_cli_init(defaults):
         
     if options.list_partitions:
         actions.add('pmpman.action.partition.list')
+
+
+    if options.block_list:
+        actions.add('pmpman.action.block.list')
     
+    if options.block_scan:
+        actions.add('pmpman.action.block.scan')
     
     output["pmpman.cli.actions"] = actions
     

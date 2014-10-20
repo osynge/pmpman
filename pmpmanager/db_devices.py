@@ -123,10 +123,10 @@ class UpdateInstance(Base):
             self.uuid = str(this_uuid)
 
 
-class Job_Triggers(Base):
+class job_triggers(Base):
     """stores job runs.
     """
-    __tablename__ = 'job_triggers'
+    __tablename__ = 'JOB_TRIGGERS'
     id = Column(Integer, primary_key=True)
     sk_uuid = Column(String(30),unique=False,nullable = False)
     source = Column(Integer, ForeignKey(Update.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
