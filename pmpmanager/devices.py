@@ -63,7 +63,7 @@ class database_model:
                 filter(model.job_namespace.name == name)
         if find_existing.count() >= 1:
             return
-        newjob_namespace = model.UpdateType()
+        newjob_namespace = model.job_namespace()
         newjob_namespace.name = name
         session.add(newjob_namespace)
         session.commit()
@@ -78,7 +78,7 @@ class database_model:
         find_existing = session.query(model.job_namespace).\
             filter(model.job_namespace.name == "lsblk")
         if find_existing.count() == 0:
-            newjob_namespace = model.UpdateType()
+            newjob_namespace = model.job_namespace()
             newjob_namespace.name = "lsblk"
             session.add(newjob_namespace)
             session.commit()
@@ -105,7 +105,7 @@ class database_model:
         if find_existing.count() == 0:
             self.log.warning("job_namespace_Clean missing name=lsblk")
             return
-        newjob_namespace = model.UpdateType()
+        newjob_namespace = model.job_namespace()
         newjob_namespace.name = name
         session.add(newjob_namespace)
         session.commit()
@@ -127,7 +127,7 @@ class database_model:
         find_existing = session.query(model.job_execution).\
                 filter(model.job_namespace.name == update_type)
         if find_existing.count == 0:
-            newjob_namespace = model.UpdateType()
+            newjob_namespace = model.job_namespace()
             newjob_namespace.name = name
             session.add(newjob_namespace)
             session.commit()
@@ -152,7 +152,7 @@ class database_model:
             return
         id_job_namespace = int(find_existing.one().id)
         find_existing = session.query(model.Update).\
-            filter(model.job_namespace.id == id_UpdateType)
+            filter(model.job_namespace.id == id_job_namespace)
         if find_existing.count() == 0:
             self.log.info("no update found")
             newUpdate = model.Update()
@@ -164,7 +164,7 @@ class database_model:
             session.add(newUpdate)
             session.commit()
         find_existing = session.query(model.Update).\
-            filter(model.job_namespace.id == id_UpdateType)
+            filter(model.job_namespace.id == id_job_namespace)
         
         id_Update =None
         for item in find_existing:

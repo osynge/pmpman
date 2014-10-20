@@ -9,7 +9,8 @@ import lsblk
 
 import db_job_queue
 import db_job_runner
-
+# shoudl not be in this function
+import pmpmanager.db_devices as model
 if __name__ == "__main__":
     main()
 
@@ -39,6 +40,7 @@ class CliInput:
     def get_parrameters_cli_init(self):
         output = get_parrameters_cli_init(self.defaults)
         actions = output["pmpman.cli.actions"]
+        self.log.debug( "pmpman.cli.actions=%s" % actions )
         if "pmpman.cli.actions" in actions:
             print actions
         if 'pmpman.action.partition.list' in actions:
@@ -78,7 +80,6 @@ class ProcesHandler:
 
     def cb_pmpman_action_list(self,caller=None):
         self.log.debug("cb_pmpman_action_list")
-
 
 
 
@@ -134,18 +135,20 @@ class ProcesHandler:
 
         QM.queue_dequeue(session = session)
         QM.queue_dequeue(session = session)
-
+        self.log.debug("cb_pmpman_block_scan:finished")
     def cb_pmpman_block_list(self,caller=None):
         self.log.debug("cb_pmpman_block_list")
         self.connect_db()
         session = self.database.Session()
 
+        find_Update = session.query(model.Block)
 
-    def cb_pmpman_block_scan(self,caller=None):
-        self.log.debug("cb_pmpman_block_scan")
-        self.connect_db()
-        session = self.database.Session()
-        self.log.info("cb_pmpman_block_scan")
+
+        if find_Update.count() == 0:
+            self.log.info("No blocks found")
+
+
+
 
     def Connect(self):
         """This function sets callbacks"""

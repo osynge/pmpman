@@ -60,7 +60,7 @@ class job_runner(bass_job_runner):
             job_namespace = instance[0]
             Update = instance[1]
             job_execution = instance[2]
-            #self.log.error("job_namespace.name=%s" % UpdateType.name)
+            #self.log.error("job_namespace.name=%s" % job_namespace.name)
             #self.log.warning("sss=%s" % (job_execution.outputjson))
             if job_execution.outputjson == None:
                 continue

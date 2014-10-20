@@ -177,14 +177,14 @@ class job_que_man(object):
        
         
         
-        find_job_namespace = session.query(model.UpdateType).\
+        find_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_type)
         if find_job_namespace.count() == 0:
-            newjob_namespace = model.UpdateType()
+            newjob_namespace = model.job_namespace()
             newjob_namespace.name = job_type
             session.add(newjob_namespace)
             session.commit()
-            find_job_namespace = session.query(model.UpdateType).\
+            find_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_type)
         
         ret_job_type = find_job_namespace.one()

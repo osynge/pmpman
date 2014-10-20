@@ -21,7 +21,7 @@ def job_namespace_Add(*args, **kwargs):
             filter(model.job_namespace.name == name)
     if find_existing.count() >= 1:
         return
-    newjob_namespace = model.UpdateType()
+    newjob_namespace = model.job_namespace()
     newjob_namespace.name = name
     session.add(newjob_namespace)
     session.commit()
@@ -44,7 +44,7 @@ def Update_Add(*args, **kwargs):
     find_existing = session.query(model.job_execution).\
             filter(model.job_namespace.name == update_type)
     if find_existing.count == 0:
-        newjob_namespace = model.UpdateType()
+        newjob_namespace = model.job_namespace()
         newjob_namespace.name = name
         session.add(newjob_namespace)
         session.commit()
@@ -81,7 +81,7 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
             
             
     if find_existing.count == 0:
-        newjob_namespace = model.UpdateType()
+        newjob_namespace = model.job_namespace()
         newjob_namespace.name = name
         session.add(newjob_namespace)
         session.commit()

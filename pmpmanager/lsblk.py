@@ -90,7 +90,7 @@ def updatdatabase(session=None):
                 ).\
             filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:
-            newjob_namespace = model.UpdateType()
+            newjob_namespace = model.job_namespace()
             newjob_namespace.name = "kname_new"
             session.add(newjob_namespace)
             session.commit()
@@ -155,7 +155,7 @@ def updatdatabase(session=None):
                 ).\
             filter(model.job_namespace.name == "kname_new")
         if find_existing.count() == 0:
-            newjob_namespace = model.UpdateType()
+            newjob_namespace = model.job_namespace()
             newjob_namespace.name = "kname_new"
             session.add(newjob_namespace)
         find_existing = session.query(model.Update,
@@ -168,7 +168,7 @@ def updatdatabase(session=None):
                     ).\
                 filter(model.job_namespace.name == "kname_new")
             if find_type.count() == 0:
-                newjob_namespace = model.UpdateType()
+                newjob_namespace = model.job_namespace()
                 newjob_namespace.name = "kname_new"
                 session.add(newjob_namespace)
                 session.commit()
