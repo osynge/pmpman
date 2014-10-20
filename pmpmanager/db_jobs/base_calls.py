@@ -96,7 +96,7 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
 
 
 def runpreloadcommand(cmd,timeout):
-    process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen([str(cmd)], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     processRc = None
     handleprocess = True
     counter = 0
