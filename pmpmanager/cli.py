@@ -5,7 +5,11 @@ import optparse
 from pmpmanager.__version__ import version as pmpman_version
 import json
 import devices
-    
+import lsblk
+
+import db_job_queue
+import db_job_runner
+
 if __name__ == "__main__":
     main()
 
@@ -14,6 +18,7 @@ if __name__ == "__main__":
 class CliInput:
     def __init__(self):
         self.defaults = dict()
+        self.callbacks = dict()
         self.log = logging.getLogger("CliInput")
         self.callbacks_set({})
 
@@ -58,18 +63,51 @@ class ProcesHandler:
         
     def connect_db(self):
         print "connect_db" ,self.UI.defaults
-        devices.database_model(self.UI.defaults['pmpman.rdms'])
+        self.database = devices.database_model(self.UI.defaults['pmpman.rdms'])
+        
     def cb_pmpman_action_udev(self,caller=None):
         procerss = 'pmpman.action.udev'
         self.log.info("cb_pmpman_action_udev")
         #output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
+        
         self.connect_db()
-        
-        
         
     def cb_pmpman_action_list(self,caller=None):
         self.log.debug("cb_pmpman_action_list")
         self.connect_db()
+        session = self.database.Session()
+        lsblk.updatdatabase(session)
+        self.database.UpdateType_Add(update_type="lsblk",)
+        self.database.UpdateType_Add(update_type="udevadm_info")
+        self.database.UpdateType_Run()
+        self.database.Update_Run()
+        self.database.UpdateInstance_Run()
+        self.database.Update_Add(update_type="udevadm_info",
+           cammand_line = "" )
+        
+        self.database.Update_Run(update_type="lsblk")
+        self.database.UpdateInstance_Run(update_type="lsblk")
+        QM = db_job_queue.job_que_man()
+        QM.session = self.database.SessionFactory()
+        QM.job_persist(job_type = "lsblk",
+                cmdln_template = "lsblk",
+                cmdln_paramters = "{}",
+                name = "lsblk",
+                session = session
+            )
+        QM.job_persist(job_type = "kname_new",
+                cmdln_template = "udevadm info -q all -n /dev/%s",
+                cmdln_paramters = '[ "sdb" ]',
+                name = "kname_new",
+                session = session,
+            )
+        available = QM.jobtype_available(job_type = "kname_new",
+                cmdln_template = "udevadm info -q all -n /dev/%s",
+                cmdln_paramters = '[ "sdb" ]',
+                name = "kname_new",
+                session = session,
+            )
+        QM.queue_dequeue()
         
     def Connect(self):
         
@@ -89,13 +127,18 @@ def main():
     
     UI.defaults = defaults
     UI.get_parrameters_cli_init()
-    
+    log = logging.getLogger("cli")
     PH = ProcesHandler(UI)
     
     PH.Connect()
     
     UI.process_actions()
-
+    
+    
+    
+    
+    
+    
 def process_actions(defaults,callbacks):
     log = logging.getLogger("process_actions")
     output = dict()
@@ -112,10 +155,10 @@ def process_actions(defaults,callbacks):
             callback = callbacks[match_tuple][i].get('callback')
             callback(caller = defaults)
             
-    if 'endorser_show' in actions:
-        json_output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
-        if json_output != None:
-            print json_output
+    #if 'endorser_show' in actions:
+    #    json_output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
+    #    if json_output != None:
+    #        print json_output
     return output
     
 def get_parrameters_enviroment(defaults):
@@ -203,6 +246,6 @@ def get_parrameters_cli_init(defaults):
         output['pmpman.rdms'] = options.database
     
     if output.get('pmpman.rdms') == None:
-        output['pmpman.rdms'] = 'sqlite:///vmcaster.db'
+        output['pmpman.rdms'] = 'sqlite:///pmpman.db'
         log.info("Defaulting DB connection to '%s'" % (output['pmpman.rdms']))
     return output
