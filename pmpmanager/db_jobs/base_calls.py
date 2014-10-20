@@ -41,7 +41,7 @@ def Update_Add(*args, **kwargs):
     if session == None:
         log.warning("Update_Add missing name")
         return
-    find_existing = session.query(model.UpdateInstance).\
+    find_existing = session.query(model.job_execution).\
             filter(model.UpdateType.name == update_type)
     if find_existing.count == 0:
         newUpdateType = model.UpdateType()

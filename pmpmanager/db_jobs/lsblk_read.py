@@ -7,7 +7,7 @@ import datetime
 import uuid
 def Property(func):
     return property(**func())
-    
+
 
 class job_runner(bass_job_runner):
     def __init__(self):
@@ -25,46 +25,46 @@ class job_runner(bass_job_runner):
 
         def fset(self, value):
             self._session = value
-            
+
         def fdel(self):
             del self._session
         return locals()
-    
-    
+
+
     def run(self, *args, **kwargs):
-        
+
         #self.log.debug("self.job_class=%s" % self.job_class)
         self.triggers = json.dumps([],sort_keys=True, indent=4)
         self.trig_parameters = json.dumps([],sort_keys=True, indent=4)
-        
+
         session = kwargs.get('session', None)
         if session == None:
             self.log.warning("Update_Add missing name")
             return
         #self.log.warning("running")
-        instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
-            filter(model.UpdateInstance.fk_update == model.Update.id).\
+        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+            filter(model.job_execution.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
-            order_by(model.UpdateInstance.created)
+            order_by(model.job_execution.created)
         #self.log.warning("count=%s" % instance_query.count())
         #for item in instance_query:
         #    print item[0].name
-        
-        instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
-            filter(model.UpdateInstance.fk_update == model.Update.id).\
+
+        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+            filter(model.job_execution.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             filter(model.UpdateType.name == "lsblk_query").\
-            order_by(model.UpdateInstance.created)
+            order_by(model.job_execution.created)
         #self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
             UpdateType = instance[0]
             Update = instance[1]
-            UpdateInstance = instance[2]
+            job_execution = instance[2]
             #self.log.error("UpdateType.name=%s" % UpdateType.name)
-            #self.log.warning("sss=%s" % (UpdateInstance.outputjson))
-            if UpdateInstance.outputjson == None:
+            #self.log.warning("sss=%s" % (job_execution.outputjson))
+            if job_execution.outputjson == None:
                 continue
-            read_output = json.loads(UpdateInstance.outputjson)
+            read_output = json.loads(job_execution.outputjson)
             if read_output == None:
                 continue
             for item in read_output:
@@ -73,30 +73,30 @@ class job_runner(bass_job_runner):
                     filter(model.Update.fk_type == model.UpdateType.id).\
                     filter(model.UpdateType.name == "udev_query")
                 new_cmdln = "udevadm info -q all -n /dev/%s" % (key)
-                
+
                 for item in dest_query:
                     UpdateType = item[0]
                     Update = item[1]
-                    newUpdateInstance = model.UpdateInstance()
-                    newUpdateInstance.fk_update = Update.id
-                    newUpdateInstance.name = "udev_query"
-                    newUpdateInstance.created = datetime.datetime.now()
-                    newUpdateInstance.expires = datetime.datetime.now()
-                    newUpdateInstance.outputjson = None
-                    newUpdateInstance.returncode = None
-                    newUpdateInstance.uuid = str(uuid.uuid1())
-                    newUpdateInstance.triggers = "[]"               
-                    newUpdateInstance.cmdln = new_cmdln        
-                    session.add(newUpdateInstance)
+                    newjob_execution = model.UpdateInstance()
+                    newjob_execution.fk_update = Update.id
+                    newjob_execution.name = "udev_query"
+                    newjob_execution.created = datetime.datetime.now()
+                    newjob_execution.expires = datetime.datetime.now()
+                    newjob_execution.outputjson = None
+                    newjob_execution.returncode = None
+                    newjob_execution.uuid = str(uuid.uuid1())
+                    newjob_execution.triggers = "[]"
+                    newjob_execution.cmdln = new_cmdln
+                    session.add(newjob_execution)
                     session.commit()
-            #session.delete(UpdateInstance)
+            #session.delete(job_execution)
             session.commit()
-        
-        instance_query = session.query(model.UpdateType,model.Update,model.UpdateInstance).\
-            filter(model.UpdateInstance.fk_update == model.Update.id).\
+
+        instance_query = session.query(model.UpdateType,model.Update,model.job_execution).\
+            filter(model.job_execution.fk_update == model.Update.id).\
             filter(model.Update.fk_type == model.UpdateType.id).\
             filter(model.UpdateType.name == "lsblk_read").\
-            order_by(model.UpdateInstance.created)
+            order_by(model.job_execution.created)
         for instance in instance_query:
             print instance
 
