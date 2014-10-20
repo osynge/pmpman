@@ -1,5 +1,6 @@
 import logging
-
+import subprocess
+import time
 import pmpmanager.db_devices as model
 
 def UpdateType_Add(*args, **kwargs):
@@ -48,8 +49,39 @@ def Update_Add(*args, **kwargs):
             filter(model.UpdateType.name == name)
         log.warning( find_existing.one())
 
+def runpreloadcommand(cmd,timeout):
+    process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    processRc = None
+    handleprocess = True
+    counter = 0
+    stdout = ''
+    stderr = ''
+    while handleprocess:
+        counter += 1
+        time.sleep(1)
+        cout,cerr = process.communicate()
+        stdout += cout
+        stderr += cerr
+        process.poll()
+        processRc = process.returncode
+        if processRc != None:
+            break
+        if counter == timeout:
+            os.kill(process.pid, signal.SIGQUIT)
+        if counter > timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            processRc = -9
+            break
+    return (processRc,stdout,stderr)
+
 class job_runner():
 
+    
+    def execuet_cmdln(self, *args, **kwargs):
+        cmd = kwargs.get('cmdln', 10)
+        timeout = kwargs.get('timeout', 10)
+        return runpreloadcommand(cmd,timeout)
+    
     def save(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
