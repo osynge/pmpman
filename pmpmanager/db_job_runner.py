@@ -26,6 +26,7 @@ import db_jobs.udev_query as job_runner_udev_query
 import db_jobs.udev_read as job_runner_udev_read
 
 
+import db_devices as model
 
 
 class job_runner(object):
@@ -59,8 +60,8 @@ class job_runner(object):
                     return
             self._job_class_name = name
             if not name in self.job_classes.keys():
-                self.log.error("Cant set job class to=%s" % (name))
-                self.log.info('Valid upload protocols are ["%s"]' % (self.job_classes.keys()))
+                self.log.error("Cant set job_class to=%s" % (name))
+                self.log.info('Valid job_class are ["%s"]' % (self.job_classes.keys()))
                 if hasattr(self, '_job_class'):
                     del (self._job_runnerImp)
                 return
@@ -77,6 +78,10 @@ class job_runner(object):
             tmpJobRnner.expired = self.expired
             tmpJobRnner.uuid_execution = self.uuid_execution
             tmpJobRnner.uuid_def = self.uuid_def
+            tmpJobRnner.state = self.state
+            tmpJobRnner.cmdln_template = self.cmdln_template
+            tmpJobRnner.cmdln_paramters= self.cmdln_paramters
+            tmpJobRnner.reocuring = self.reocuring
             if hasattr(self, '_job_class'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
@@ -339,6 +344,99 @@ class job_runner(object):
             del self._uuid_def
         return locals()
 
+    @Property
+    def state():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'state'):
+                        return self._job_runnerImp.state
+                    else:
+                        return None
+            if hasattr(self, '_state'):
+                return self._state
+
+        def fset(self, value):
+            self._state = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.state != value:
+                        self._job_runnerImp.state = value
+        def fdel(self):
+            del self._state
+        return locals()
+
+
+    @Property
+    def cmdln_template():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'cmdln_template'):
+                        return self._job_runnerImp.cmdln_template
+                    else:
+                        return None
+            if hasattr(self, '_cmdln_template'):
+                return self._cmdln_template
+
+        def fset(self, value):
+            self._cmdln_template = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.cmdln_template != value:
+                        self._job_runnerImp.cmdln_template = value
+        def fdel(self):
+            del self._cmdln_template
+        return locals()
+
+    @Property
+    def cmdln_paramters():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'cmdln_paramters'):
+                        return self._job_runnerImp.cmdln_paramters
+                    else:
+                        return None
+            if hasattr(self, '_cmdln_paramters'):
+                return self._cmdln_paramters
+
+        def fset(self, value):
+            self._cmdln_paramters = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.cmdln_paramters != value:
+                        self._job_runnerImp.cmdln_paramters = value
+        def fdel(self):
+            del self._cmdln_paramters
+        return locals()
+
+    @Property
+    def reocuring():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'reocuring'):
+                        return self._job_runnerImp.reocuring
+                    else:
+                        return None
+            if hasattr(self, '_reocuring'):
+                return self._reocuring
+
+        def fset(self, value):
+            self._reocuring = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.reocuring != value:
+                        self._job_runnerImp.reocuring = value
+        def fdel(self):
+            del self._reocuring
+        return locals()
+
 
 
     def run(self, *args, **kwargs):
@@ -351,19 +449,53 @@ class job_runner(object):
 
 
 
-    def restore(self, *args, **kwargs):
+    def load(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
-        restor_details = None
-        key = kwargs.get('key', None)
-        if key != None:
-            restor_details = session.query(model.job_namespace).\
-                filter(model.job_namespace.name == name).one()
-        if getdetails == None:
-            pass
+        if session == None:
+            self.log.error("No session set")
+            return False
 
+        uuid_def = kwargs.get('uuid_def', None)
+        if uuid_def == None:
+           uuid_def = self.uuid_def
+        if uuid_def == None:
+            self.log.error("No uuid_def set")
+            return False
 
+        uuid_execution = kwargs.get('uuid_execution', None)
+        if uuid_execution == None:
+           uuid_execution = self.uuid_execution
+        if uuid_execution == None:
+            self.log.error("No uuid_execution set")
+            return False
+        query_job_def = session.query(model.job_def).\
+                filter(model.job_def.uuid == uuid_def)
+        if query_job_def.count() == 0:
+            self.log.error("failed to find uuid_def:%s" % (uuid_def))
+            return False
 
+        query_job_execution = session.query(model.job_execution).\
+                filter(model.job_execution.uuid == uuid_execution)
+        if query_job_execution.count() == 0:
+            self.log.error("failed to find uuid_def:%s" % (uuid_execution))
+            return False
 
+        query_job_namespace = session.query(model.job_namespace).\
+                filter(model.job_execution.uuid == uuid_execution).\
+                filter(model.job_def.uuid == uuid_def).\
+                filter(model.job_def.id == model.job_execution.fk_update).\
+                filter(model.job_namespace.id == model.job_def.fk_type)
+        if query_job_namespace.count() == 0:
+            self.log.error("failed to find job_namespace:%s" % (uuid_execution))
+            return False
+        job_namespace = query_job_namespace.one()
+
+        job_def = query_job_def.one()
+        job_execution = query_job_execution.one()
+
+        self.job_class = job_namespace.name
+        if hasattr(self, '_job_runnerImp'):
+            return self._job_runnerImp.load(*args, **kwargs)
 

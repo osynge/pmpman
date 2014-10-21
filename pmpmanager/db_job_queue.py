@@ -20,7 +20,7 @@ class job_que_man(object):
         self.job_class = None
         self.job_runner = db_job_runner.job_runner()
         self.job_runner.session = self.session
-    
+
     def _queue_state_cache(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -33,9 +33,9 @@ class job_que_man(object):
         for find_excuted_one in find_excuted:
             output[find_excuted_one.name] = int(find_excuted_one.id)
         return output
-        
-    def initialise(self, *args, **kwargs) : 
-        
+
+    def initialise(self, *args, **kwargs) :
+
         session = kwargs.get('initialise', None)
         if session == None:
             session = self.session
@@ -44,7 +44,7 @@ class job_que_man(object):
         for i in new_job_runner.job_classes.keys():
             new_job_runner.job_class = i
             new_job_runner.save()
-                
+
     def quque_display_debug( self, *args, **kwargs) :
         self.log.debug('queue_dequeue')
         session = kwargs.get('session', None)
@@ -59,7 +59,7 @@ class job_que_man(object):
                 filter(model.job_execution.fk_update == model.job_def.id).\
                 filter(model.job_def.fk_type == model.job_namespace.id).\
                 order_by(model.job_execution.created)
-            
+
             details = {}
             for itme  in find_job_def:
                 job_execution = itme[0]
@@ -72,8 +72,8 @@ class job_que_man(object):
                 details[key] = facts
             output[name] = details
         print output
-        
-        
+
+
     def queue_length(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -82,23 +82,23 @@ class job_que_man(object):
         find_job_def = session.query(model.job_def).\
             filter(model.job_execution.fk_state == model.job_state.id).\
             filter(model.job_state.name == "create" )
-        
+
         createlen = int(find_job_def.count())
         findpenlen = session.query(model.job_def).\
             filter(model.job_execution.fk_state == model.job_state.id).\
             filter(model.job_state.name == "pending" ).count()
-        
+
         return createlen + findpenlen
-        
-        
+
+
     def queue_read(self, *args, **kwargs):
         session = kwargs.get('queue_read', None)
         if session == None:
             session = self.session
-        
-        
-        
-        
+
+
+
+
         find_job_def = session.query(model.job_execution,model.job_def,model.job_namespace).\
                 filter(model.job_execution.fk_update == model.job_def.id).\
                 filter(model.job_def.fk_type == model.job_namespace.id).\
@@ -108,13 +108,13 @@ class job_que_man(object):
             job_execution = item[0]
             job_namespace = item[2]
             job_def =  item[1]
-            
+
             tridggeres = json.loads ( job_execution.triggers)
             #self.log.error('tridggeres=%s' % tridggeres)
             params = json.loads ( job_execution.trig_parameters)
             for trig in tridggeres:
                 self.log.error('trig=%s' % trig)
-                
+
                 update_query = session.query(model.job_def).\
                     filter(model.job_def.fk_type == model.job_namespace.id).\
                     filter(model.job_namespace.name == trig)
@@ -138,28 +138,28 @@ class job_que_man(object):
                     session.add(newjob_execution)
                     session.commit()
 
-                
-                
-                
+
+
+
     def queue_dequeue(self, *args, **kwargs):
         self.log.debug('queue_dequeue')
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
-        
-        
-        
+
+
+
         queue_state_cache = self._queue_state_cache(session = session)
         did_something = False
-        pending_timeout = 10
+        pending_timeout = 1
         finished_timeout = 10
-        #datetime to expire 
+        #datetime to expire
         datetime_now = datetime.datetime.now()
         datetime_timeout_pending = datetime_now - datetime.timedelta(0,pending_timeout)
         datetime_timeout_finished = datetime_now - datetime.timedelta(0,finished_timeout)
         datetime_due_expires = datetime_now +  datetime.timedelta(0,finished_timeout)
         # convert state "create" to "pending"
-        
+
         find_job_def = session.query(model.job_execution,model.job_namespace).\
                 filter(model.job_state.id == queue_state_cache["create"]).\
                 filter(model.job_execution.fk_state == model.job_state.id).\
@@ -171,41 +171,40 @@ class job_que_man(object):
             job_execution.fk_state = queue_state_cache["pending"]
             session.add(job_execution)
             session.commit()
-        
+
         # convert state "finished" to "garbidge" when expired time passed
         find_job_def = session.query(model.job_execution,model.job_namespace).\
                 filter(model.job_state.id == queue_state_cache["finished"]).\
                 filter(model.job_execution.fk_state == model.job_state.id).\
                 filter(model.job_execution.finshed < datetime_timeout_pending).\
                 order_by(model.job_execution.created)
-        
+
         for item in find_job_def:
             job_execution = item[0]
             job_execution.fk_state = queue_state_cache["garbidge"]
             session.add(job_execution)
             session.commit()
-        
+
         # Run pending jobs
-                    
-        find_job_def = session.query(model.job_execution,model.job_namespace).\
+
+        find_job_def = session.query(model.job_execution,model.job_namespace,model.job_def).\
                 filter(model.job_state.id == queue_state_cache["pending"]).\
                 filter(model.job_execution.fk_state == model.job_state.id).\
+                filter(model.job_execution.fk_update == model.job_def.id).\
                 order_by(model.job_execution.created)
         #self.log.error('queue_dequeue=%s' % find_job_def.count())
-        
+
         for item in find_job_def:
             job_execution = item[0]
-            print job_execution.created
             job_namespace = item[1]
+            job_def = item[2]
             new_job_runner = db_job_runner.job_runner()
             new_job_runner.session = session
-            new_job_runner.job_class = job_namespace.name
-            new_job_runner.outputjson = job_execution.outputjson
-            new_job_runner.created = job_execution.created
-            new_job_runner.expires = job_execution.expires
-            new_job_runner.expired = job_execution.expires
-            
+            new_job_runner.uuid_def = job_def.uuid
+            new_job_runner.uuid_execution = job_execution.uuid
+            new_job_runner.load(session = session)
             new_job_runner.run(session = session)
+            new_job_runner.save(session = session)
             job_execution.outputjson = new_job_runner.outputjson
             job_execution.finshed = datetime_now
             job_execution.expires = datetime_due_expires
@@ -217,18 +216,18 @@ class job_que_man(object):
             session.add(job_execution)
             session.commit()
             self.quque_display_debug()
-            return True  
-        
-        
-        
-        return False
-    
-    
-    
-        
-        
+            return True
 
-            
+
+
+        return False
+
+
+
+
+
+
+
     def jobtype_available(self, *args, **kwargs):
         session = kwargs.get('jobtype_available', None)
         if session == None:
@@ -242,7 +241,7 @@ class job_que_man(object):
         for item in job_types_query:
             output.append(item)
         return output
-        
+
     def job_persist(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -278,32 +277,32 @@ class job_que_man(object):
             ssss
             self.log.debug("No UUID specified")
             job_uuid = str(uuid.uuid4())
-       
-       
-       
+
+
+
         find_create = session.query(model.job_state).\
                 filter(model.job_state.name == "create")
         find_create_id = None
-        find_create_count = find_create.count() 
+        find_create_count = find_create.count()
         if find_create_count == 0:
             newjob_state = model.job_state()
             newjob_state.name = "create"
             session.add(newjob_state)
             session.commit()
-         
-        find_state_count = session.query(model.job_state).count() 
-        
+
+        find_state_count = session.query(model.job_state).count()
+
         if find_state_count == 0:
             self.log.error("Bad data base")
             return -2
-        
-        
-        
+
+
+
         find_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_type)
-       
-        
-        
+
+
+
         if find_job_namespace.count() == 0:
             newjob_namespace = model.job_namespace()
             newjob_namespace.name = job_type
@@ -311,15 +310,15 @@ class job_que_man(object):
             session.commit()
             find_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_type)
-        
+
         ret_job_type = find_job_namespace.one()
-        
+
         find_job_def = session.query(model.job_def).\
                 filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
                 filter(model.job_def.cmdln_paramters == cmdln_paramters)
-                
+
         if find_job_def.count() == 0:
             newjob_def = model.job_def()
             newjob_def.fk_type = ret_job_type.id
@@ -334,22 +333,22 @@ class job_que_man(object):
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
                 filter(model.job_def.cmdln_paramters == cmdln_paramters)
-                
-            
+
+
         if find_job_def.count() != 1:
             self.log.error("Some thign bad happened")
 
         ret_job_details = find_job_def.one()
-        
-        
+
+
         find_job_def = session.query(model.job_execution).\
                 filter(model.job_execution.fk_update == model.job_def.id).\
                 filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
                 filter(model.job_def.cmdln_paramters == cmdln_paramters)
-                        
-        
+
+
         if find_job_def.count() == 0:
             newjob_execution = model.job_execution()
             newjob_execution.fk_update = ret_job_details
