@@ -156,8 +156,8 @@ class job_que_man(object):
         #datetime to expire 
         datetime_now = datetime.datetime.now()
         datetime_timeout_pending = datetime_now - datetime.timedelta(0,pending_timeout)
-        datetime_timeout_finished = datetime_now - datetime.timedelta(0,pending_timeout)
-        
+        datetime_timeout_finished = datetime_now - datetime.timedelta(0,finished_timeout)
+        datetime_due_expires = datetime_now +  datetime.timedelta(0,finished_timeout)
         # convert state "create" to "pending"
         
         find_job_def = session.query(model.job_execution,model.job_namespace).\
@@ -208,6 +208,7 @@ class job_que_man(object):
             new_job_runner.run(session = session)
             job_execution.outputjson = new_job_runner.outputjson
             job_execution.finshed = datetime_now
+            job_execution.expires = datetime_due_expires
             job_execution.returncode = new_job_runner.returncode
             job_execution.cmdln = new_job_runner.cmdln
             job_execution.triggers = new_job_runner.triggers
