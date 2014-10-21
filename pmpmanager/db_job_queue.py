@@ -206,6 +206,10 @@ class job_que_man(object):
             job_execution.trig_parameters = new_job_runner.trig_parameters
             job_execution.fk_state = queue_state_cache["finished"]
             session.add(job_execution)
+
+            for subscriber in job_execution.subscribe_list:
+                print subscriber
+
             session.commit()
             self.quque_display_debug()
             return True
@@ -304,15 +308,15 @@ class job_que_man(object):
                 filter(model.job_namespace.name == job_type)
 
         ret_job_type = find_job_namespace.one()
-        
-        
-        
+
+
+
         find_job_def = session.query(model.job_def).\
                 filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name)
         for item in find_job_def:
             self.log.info(item)
-                
+
 
         find_job_def = session.query(model.job_def).\
                 filter(model.job_def.fk_type == ret_job_type.id).\

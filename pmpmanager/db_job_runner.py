@@ -1,5 +1,5 @@
 import logging
-
+import uuid
 
 def Property(func):
     return property(**func())
@@ -44,6 +44,7 @@ class job_runner(object):
             "udev_read" : job_runner_udev_read,
             "lsblk_read" : job_runner_lsblk_read,
             }
+        self.subscribe_list = set([])
 
     @Property
     def job_class():
@@ -54,6 +55,7 @@ class job_runner(object):
                 return None
 
         def fset(self, name):
+            self.log.debug("set job_class:%s" % (name))
             if hasattr(self, '_job_class'):
                 if name == self._job_class:
                     self.log.error("dont replay")
@@ -82,6 +84,7 @@ class job_runner(object):
             tmpJobRnner.cmdln_template = self.cmdln_template
             tmpJobRnner.cmdln_paramters= self.cmdln_paramters
             tmpJobRnner.reocuring = self.reocuring
+            tmpJobRnner.subscribe_list = self.subscribe_list
             if hasattr(self, '_job_class'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
@@ -437,7 +440,84 @@ class job_runner(object):
             del self._reocuring
         return locals()
 
+    @Property
+    def subscribe_list():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'subscribe_list'):
+                        return self._job_runnerImp.subscribe_list
+                    else:
+                        return None
+            if hasattr(self, '_subscribe_list'):
+                return self._subscribe_list
 
+        def fset(self, value):
+            if value == None:
+                value = set([])
+            self._subscribe_list = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.subscribe_list != value:
+                        self._job_runnerImp.subscribe_list = value
+        def fdel(self):
+            del self._subscribe_list
+        return locals()
+
+    @Property
+    def publish_list():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'publish_list'):
+                        return self._job_runnerImp.publish_list
+                    else:
+                        return None
+            if hasattr(self, '_publish_list'):
+                return self._publish_list
+
+        def fset(self, value):
+            if value == None:
+                value = set([])
+            self._publish_list = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.publish_list != value:
+                        self._job_runnerImp.publish_list = value
+        def fdel(self):
+            del self._publish_list
+        return locals()
+    def subscribe_add(self, subscribe_uuid, **kwargs):
+        old_subscribe = self.subscribe_list
+        old_subscribe.add(subscribe_uuid)
+        self.subscribe_list = old_subscribe
+
+    def subscribe_del(self, subscribe_uuid, **kwargs):
+        old_subscribe = self.subscribe_list
+        old_subscribe.delete(subscribe_uuid)
+        self.subscribe_list = old_subscribe
+
+    def enqueue(self, *args, **kwargs):
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        if session == None:
+            self.log.error("No session set")
+            return False
+        enqueue_job_runner = job_runner()
+        enqueue_job_runner.job_class = self.job_class
+        enqueue_job_runner.uuid_def = self.uuid_def
+        enqueue_job_runner.reocuring = self.reocuring
+        enqueue_job_runner.cmdln_template = self.cmdln_template
+        enqueue_job_runner.cmdln_paramters = self.cmdln_paramters
+        enqueue_job_runner.name = self.name
+        # Now creat an execution ID
+        enqueue_job_runner.uuid_execution = str(uuid.uuid1())
+        # Now save queued request
+        enqueue_job_runner.save(session = session)
+        return True
 
     def run(self, *args, **kwargs):
         if hasattr(self, '_job_runnerImp'):
@@ -445,7 +525,7 @@ class job_runner(object):
 
     def save(self, *args, **kwargs):
         if hasattr(self, '_job_runnerImp'):
-            return self._job_runnerImp.save()
+            return self._job_runnerImp.save(*args, **kwargs)
 
 
 

@@ -47,33 +47,14 @@ def Property(func):
 
 class job_runner(bass_job_runner):
     def __init__(self):
+        bass_job_runner.__init__(self)
         self.remotePrefix = None
         self.log = logging.getLogger("job_runner.lsblk_query")
         self.cmdln_template = "lsblk  --output %s  --pairs"
 
 
-    @Property
-    def session():
-        doc = "Remote upload prefix"
 
-        def fget(self):
-            return self._session
-
-        def fset(self, value):
-            self._session = value
-
-        def fdel(self):
-            del self._session
-        return locals()
-
-    @Property
-    def cmdln():
-        doc = "cmdlin property"
-
-        def fget(self):
-            return cmdln
-
-        return locals()
+    
 
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)

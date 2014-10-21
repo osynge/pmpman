@@ -7,51 +7,6 @@ import uuid
 def Property(func):
     return property(**func())
 
-def job_namespace_Add(*args, **kwargs):
-    log = logging.getLogger("job_namespace_Add")
-    name = kwargs.get('name', None)
-    if name == None:
-        log.warning("job_namespace_Add missing name")
-        return
-    session = kwargs.get('session', None)
-    if session == None:
-        log.warning("job_def_Add missing name")
-        return
-    find_existing = session.query(model.job_namespace).\
-            filter(model.job_namespace.name == name)
-    if find_existing.count() >= 1:
-        return
-    newjob_namespace = model.job_namespace()
-    newjob_namespace.name = name
-    session.add(newjob_namespace)
-    session.commit()
-
-def job_def_Add(*args, **kwargs):
-    log = logging.getLogger("job_def_Add")
-    update_type = kwargs.get('update_type', None)
-    if update_type == None:
-        log.warning("job_def_Add missing update_type")
-        return
-    
-    name = kwargs.get('name', None)
-    if name == None:
-        log.warning("job_def_Add missing name")
-        return
-    session = kwargs.get('session', None)
-    if session == None:
-        log.warning("job_def_Add missing name")
-        return
-    find_existing = session.query(model.job_execution).\
-            filter(model.job_namespace.name == update_type)
-    if find_existing.count == 0:
-        newjob_namespace = model.job_namespace()
-        newjob_namespace.name = name
-        session.add(newjob_namespace)
-        session.commit()
-        session = self.SessionFactory()
-        find_existing = session.query(model.job_namespace).\
-            filter(model.job_namespace.name == name)
-        log.warning( find_existing.one())
 
 
 
@@ -65,7 +20,7 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
     if dest == None:
         log.warning("missing dest")
         return
-    
+
     sk_uuid = kwargs.get('sk_uuid', None)
     if sk_uuid == None:
         fdsdfdsf
@@ -78,8 +33,8 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
     find_existing = session.query(model.job_triggers,).\
             filter(model.job_triggers.source == source).\
             filter(model.job_triggers.dest == dest)
-            
-            
+
+
     if find_existing.count == 0:
         newjob_namespace = model.job_namespace()
         newjob_namespace.name = name
@@ -89,8 +44,8 @@ def store_sk_uuid_job_triggers(*args, **kwargs):
         find_existing = session.query(model.job_triggers,).\
             filter(model.job_namespace.name == source).\
             filter(model.name == source)
-            
-            
+
+
         log.warning( find_existing.one())
 
 
@@ -120,25 +75,26 @@ def runpreloadcommand(cmd,timeout):
             break
     return (processRc,stdout,stderr)
 
-class job_runner():
+class job_runner(object):
 
-    
+
     def store_job_triggers(self, *args, **kwargs):
-        
+
         return store_sk_uuid_job_triggers(*args,**kwargs)
-    
-    
+
+
     def execuet_cmdln(self, *args, **kwargs):
         cmd = kwargs.get('cmdln', 10)
         timeout = kwargs.get('timeout', 10)
         return runpreloadcommand(cmd,timeout)
-    
+
     def save(self, *args, **kwargs):
-        self.log.debug("save")
+        #self.log.debug("save")
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
         if session == None:
+            sdsdfsdfs
             self.log.error("No session set")
             return False
 
@@ -148,38 +104,68 @@ class job_runner():
         if uuid_def == None:
             self.log.error("No uuid_def set")
             return False
-        
+
+        job_class = kwargs.get('job_class', None)
+        if job_class == None:
+           job_class = self.job_class
+        if job_class == None:
+            self.log.error("No job_class set")
+            return False
+        # Now the ones we dont need
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution
-        
+
+        # Finished input validation
+
+        query_job_namespace = session.query(model.job_namespace).\
+                filter(model.job_namespace.name == job_class)
+        if query_job_namespace.count() == 0:
+            job_namespace = model.job_namespace()
+            job_namespace.name = job_class
+            session.add(job_namespace)
+            session.commit()
+            query_job_namespace = session.query(model.job_namespace).\
+                filter(model.job_namespace.name == job_class)
+
+        job_namespace = query_job_namespace.one()
+
         query_job_def = session.query(model.job_def).\
                 filter(model.job_def.uuid == uuid_def)
-        
+
         if query_job_def.count() == 0:
-            self.log.error("failed to find uuid_def:%s" % (uuid_def))
-            return False
-        
+            job_def = model.job_def()
+            job_def.fk_type = job_namespace.id
+            job_def.cmdln_template = self.cmdln_template
+            job_def.cmdln_paramters = self.cmdln_paramters
+            job_def.reocuring = self.reocuring
+            job_def.uuid = uuid_def
+            session.add(job_def)
+            session.commit()
+            query_job_def = session.query(model.job_def).\
+                filter(model.job_def.uuid == uuid_def)
+
         job_def = query_job_def.one()
         job_def.cmdln_template = self.cmdln_template
         job_def.cmdln_paramters = self.cmdln_paramters
         job_def.reocuring = self.reocuring
+        job_def.fk_type = job_namespace.id
         session.add(job_def)
         session.commit()
-        
+
         need_uuid_execution = False
         if self.state != None:
-            need_uuid_execution = True        
+            need_uuid_execution = True
         if not need_uuid_execution:
             self.log.debug("No execution details set.")
             return True
         if uuid_execution == None:
             self.log.error("No uuid_execution set")
             return False
-            
-        
+
+
         # Query remaining details
-        
+
         query_job_state = session.query(model.job_state).\
                 filter(model.job_execution.uuid == uuid_execution).\
                 filter(model.job_def.uuid == uuid_def).\
@@ -188,15 +174,15 @@ class job_runner():
         if query_job_state.count() == 0:
             self.log.error("failed to find job_state:%s" % (uuid_execution))
             return False
-        
-        
+
+
         query_job_execution = session.query(model.job_execution).\
                 filter(model.job_execution.uuid == uuid_execution)
         if query_job_execution.count() == 0:
             self.log.error("failed to find uuid_def:%s" % (uuid_execution))
             return False
-        
-                
+
+
         job_state= query_job_state.one()
         if self.state != job_state.name:
             # We have to save the state
@@ -219,39 +205,10 @@ class job_runner():
         job_execution.expired = self.expired
         session.add(job_execution)
         session.commit()
-        
-        ### Old code here ###
-        session = kwargs.get('session', None)
-        if session == None:
-            session = self.session
-        if session == None:
-            self.log.error("session is None")
-            return
-        #for it in self.session.query()
-        #self.log.error("self.job_class=%s" % self.job_class)
-        #self.log.error("self.session=%s" % self.session)
-        job_namespace_Add(session=self.session,
-             name = self.job_class)
-             
-        
-        job_def_Add(session=self.session,
-             update_type = self.job_class,
-             name = self.job_class,
-             cmdln_template = self.cmdln_template
-             )
-        self.store_job_triggers(session=self.session,
-             update_type = self.job_class,
-             name = self.job_class,
-             cmdln_template = self.cmdln_template,
-             source = "ssss",
-             dest = "dddddd",
-             sk_uuid = str(self.uuid_execution)
-        )
-        
         return True
-        
-        
-        
+
+
+
     def run(self, *args, **kwargs):
         pass
 
@@ -270,7 +227,7 @@ class job_runner():
         if uuid_def == None:
             self.log.error("No uuid_def set")
             return False
-        
+
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution
@@ -288,7 +245,7 @@ class job_runner():
         if query_job_execution.count() == 0:
             self.log.error("failed to find uuid_def:%s" % (uuid_execution))
             return False
-        
+
         query_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_execution.uuid == uuid_execution).\
                 filter(model.job_def.uuid == uuid_def).\
@@ -297,7 +254,7 @@ class job_runner():
         if query_job_namespace.count() == 0:
             self.log.error("failed to find job_namespace:%s" % (uuid_execution))
             return False
-        
+
         query_job_state = session.query(model.job_state).\
                 filter(model.job_execution.uuid == uuid_execution).\
                 filter(model.job_def.uuid == uuid_def).\
@@ -306,54 +263,90 @@ class job_runner():
         if query_job_state.count() == 0:
             self.log.error("failed to find job_state:%s" % (uuid_execution))
             return False
-        
+
         job_state= query_job_state.one()
         self.state = job_state.name
-        
+
         job_namespace = query_job_namespace.one()
-        
+
         job_def = query_job_def.one()
         self.cmdln_template = job_def.cmdln_template
         self.cmdln_paramters= job_def.cmdln_paramters
         self.reocuring = job_def.reocuring
-        
-        
+
+
         job_execution = query_job_execution.one()
-        
+
         self.cmdln = job_execution.cmdln
         self.returncode = job_execution.cmdln
         self.outputjson = job_execution.outputjson
         self.created = job_execution.created
         self.expires = job_execution.expires
         self.expired = job_execution.expired
-        
+
         return True
 
-    @Property
-    def cmdln():
-        doc = "Remote upload prefix"
 
-        def fget(self):
-            return self._session
 
-        def fset(self, value):
-            self._session = value
-            
-        def fdel(self):
-            del self._session
-        return locals()
-    
     @Property
     def arguments():
         doc = "Remote upload prefix"
 
         def fget(self):
-            return self._session
+            return self._arguments
 
         def fset(self, value):
-            self._session = value
-            
+            self._arguments = value
+
         def fdel(self):
-            del self._session
+            del self._arguments
         return locals()
-    
+
+    @Property
+    def cmdln_template():
+        doc = "Remote upload prefix"
+
+        def fget(self):
+            if self._cmdln_template == None:
+                return ""
+            return self._cmdln_template
+
+        def fset(self, value):
+            self._cmdln_template = value
+
+        def fdel(self):
+            del self._cmdln_template
+        return locals()
+
+    @Property
+    def reocuring():
+        doc = "Remote upload prefix"
+
+        def fget(self):
+            if self._reocuring == None:
+                return ""
+            return self._reocuring
+
+        def fset(self, value):
+            self._reocuring = value
+
+        def fdel(self):
+            del self._reocuring
+        return locals()
+
+    @Property
+    def uuid_def():
+        doc = "Remote upload prefix"
+
+        def fget(self):
+            if self._uuid_def == None:
+                self._uuid_def = str(uuid.uuid1())
+            return self._uuid_def
+
+        def fset(self, value):
+            self._uuid_def = value
+
+
+        def fdel(self):
+            del self._uuid_def
+        return locals()
