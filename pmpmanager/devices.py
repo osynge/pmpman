@@ -36,6 +36,23 @@ import json
 import db_job_queue
 
 
+def initial_data_add(session):
+
+
+    state_create = model.job_state()
+    state_create.name = "create"
+
+    state_garbidge = model.job_state()
+    state_garbidge.name = "garbidge"
+    
+    state_executing = model.job_state()
+    executing.name = "executing"
+    
+    
+
+
+    session.add()
+
 
 class database_model:
     def __init__(self,databaseConnectionString):
@@ -43,12 +60,24 @@ class database_model:
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
-    
-    
+        if self.CheckInittialising():
+            initial_data_add()
+
+    def CheckInittialising(self):
+        session = self.SessionFactory()
+        find_create_count = session.query(model.job_namespace).count() 
+        if find_create_count == 0:
+            newjob_state = model.job_state()
+            newjob_state.name = "create"
+            session.add(newjob_state)
+            session.commit()
+
+        
+
     def Session(self):
         return self.SessionFactory()
-    
-        
+
+
 
 
     def job_namespace_Add(self, *args, **kwargs):
@@ -67,14 +96,14 @@ class database_model:
         newjob_namespace.name = name
         session.add(newjob_namespace)
         session.commit()
-        
+
     def job_namespace_Run(self, *args, **kwargs):
         self.log.warning("job_namespace_Run")
         completed = False
         session = kwargs.get('session', None)
         if session == None:
             session = self.SessionFactory()
-        
+
         find_existing = session.query(model.job_namespace).\
             filter(model.job_namespace.name == "lsblk")
         if find_existing.count() == 0:
@@ -90,10 +119,10 @@ class database_model:
             self.log.warning("booo hooo")
             return
         updateType = find_existing.one()
-        
-        
+
+
         self.log.warning(updateType.name)
-        
+
     def job_namespace_Clean(self, *args, **kwargs):
         name = kwargs.get('name', None)
         if name == None:
@@ -144,7 +173,7 @@ class database_model:
         session = kwargs.get('session', None)
         if session == None:
             session = self.SessionFactory()
-        
+
         find_existing = session.query(model.job_namespace).\
             filter(model.job_namespace.name == "lsblk")
         if find_existing.count() == 0:
@@ -165,12 +194,12 @@ class database_model:
             session.commit()
         find_existing = session.query(model.job_def).\
             filter(model.job_namespace.id == id_job_namespace)
-        
+
         id_job_def =None
         for item in find_existing:
             id_job_def = item.id
-        
-        
+
+
         find_existing = session.query(model.job_execution).\
             filter(model.job_def.id == id_job_def).\
             filter(model.job_execution.fk_update == model.job_def.id)
@@ -199,9 +228,9 @@ class database_model:
             self.log.warning("booo hooo")
             return
         updateType = find_existing.one()
-        
 
-        
+
+
     def job_execution_Run_old(self, *args, **kwargs):
         self.log.debug('job_execution_Run')
         session = kwargs.get('session', None)
@@ -222,14 +251,14 @@ class database_model:
                 output = lsblk.updatdatabase(session=session)
                 #self.log.warning("newImage.devName=%s"  % (output))
                 item_type.outputjson = output
-                
+
                 session.add(item_type)
                 session.commit()
                 self.job_def_Add(update_type="lsblkrc",)
             if item_type.name == "":
                 pass
         session.commit()
-        
+
     def job_execution_Run(self, *args, **kwargs):
         pass
-        
+

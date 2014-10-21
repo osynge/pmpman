@@ -29,12 +29,11 @@ class job_namespace(Base):
     __tablename__ = 'job_type'
     id = Column(Integer, primary_key=True)
     name = Column(String(1024),nullable = False,unique=True)
-    lifetime = Column(Integer,nullable = True)
+    
     def __init__(self, *args, **kwargs):
         name = kwargs.get('name', None)
         if name != None:
            self.name = name
-        self.lifetime = kwargs.get('lifetime', 60)
 
 
 class job_state(Base):
@@ -85,7 +84,7 @@ class job_execution(Base):
     __tablename__ = 'job_scheduling'
     id = Column(Integer, primary_key=True)
     fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
-    
+    fk_state = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     cmdln = Column(String(1024),unique=False,nullable = True)
     uuid = Column(String(30),unique=False,nullable = False)
     

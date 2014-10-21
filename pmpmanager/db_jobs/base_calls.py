@@ -134,6 +134,7 @@ class job_runner():
         return runpreloadcommand(cmd,timeout)
     
     def save(self, *args, **kwargs):
+        print 
         session = kwargs.get('session', None)
         if session == None:
             session = self.session

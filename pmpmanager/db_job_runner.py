@@ -76,7 +76,7 @@ class job_runner(object):
             tmpJobRnner.expires = self.expires
             tmpJobRnner.expired = self.expired
             tmpJobRnner.uuid_execution = self.uuid_execution
-
+            tmpJobRnner.uuid_def = self.uuid_def
             if hasattr(self, '_job_class'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
@@ -314,6 +314,29 @@ class job_runner(object):
                         self._job_runnerImp.uuid_execution = value
         def fdel(self):
             del self._uuid_execution
+        return locals()
+
+    @Property
+    def uuid_def():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'uuid_def'):
+                        return self._job_runnerImp.uuid_def
+                    else:
+                        return None
+            if hasattr(self, '_uuid_def'):
+                return self._uuid_def
+
+        def fset(self, value):
+            self._uuid_def = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.uuid_def != value:
+                        self._job_runnerImp.uuid_def = value
+        def fdel(self):
+            del self._uuid_def
         return locals()
 
 

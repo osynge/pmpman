@@ -37,7 +37,8 @@ class job_que_man(object):
     def queue_length(self):
         output = 0
         return output
-    
+        find_job_def = session.query(model.job_def).\
+            filter(model.job_execution.fk_update == model.job_def.id)
     
     def queue_read(self, *args, **kwargs):
         session = kwargs.get('queue_read', None)
@@ -179,10 +180,31 @@ class job_que_man(object):
             self.log.debug("No UUID specified")
             job_uuid = str(uuid.uuid4())
        
+       
+       
+        find_create = session.query(model.job_state).\
+                filter(model.job_state.name == "create")
+        find_create_id = None
+        find_create_count = find_create.count() 
+        if find_create_count == 0:
+            newjob_state = model.job_state()
+            newjob_state.name = "create"
+            session.add(newjob_state)
+            session.commit()
+         
+        find_state_count = session.query(model.job_state).count() 
+        
+        if find_state_count == 0:
+            self.log.error("Bad data base")
+            return -2
+        
         
         
         find_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_type)
+       
+        
+        
         if find_job_namespace.count() == 0:
             newjob_namespace = model.job_namespace()
             newjob_namespace.name = job_type
@@ -227,11 +249,12 @@ class job_que_man(object):
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
                 filter(model.job_def.cmdln_paramters == cmdln_paramters)
-                
+                        
         
         if find_job_def.count() == 0:
             newjob_execution = model.job_execution()
-            newjob_execution.fk_update == ret_job_details.id
+            newjob_execution.fk_update = ret_job_details
+            newjob_execution.fk_state = 1
             newjob_execution.name = name
             newjob_execution.created = datetime.datetime.now()
             newjob_execution.expires = datetime.datetime.now()
