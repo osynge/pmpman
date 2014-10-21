@@ -36,22 +36,26 @@ import json
 import db_job_queue
 
 
+def initial_data_add_job_state(session,name):
+    print "addind"
+    state_new = model.job_state()
+    state_new.name = name
+    session.add(state_new)
+
+
 def initial_data_add(session):
-
-
-    state_create = model.job_state()
-    state_create.name = "create"
-
-    state_garbidge = model.job_state()
-    state_garbidge.name = "garbidge"
+    for state in [ 
+                    "create",
+                    "garbidge",
+                    "executing",
+                    "finished",
+                    "pending"
+                ]:
+        initial_data_add_job_state(session,state)
     
-    state_executing = model.job_state()
-    executing.name = "executing"
+    session.commit()
     
     
-
-
-    session.add()
 
 
 class database_model:
@@ -60,17 +64,16 @@ class database_model:
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
-        if self.CheckInittialising():
-            initial_data_add()
+        if self.CheckInittialisingNeeded():
+            initial_data_add(self.SessionFactory())
 
-    def CheckInittialising(self):
+    def CheckInittialisingNeeded(self):
         session = self.SessionFactory()
         find_create_count = session.query(model.job_namespace).count() 
         if find_create_count == 0:
-            newjob_state = model.job_state()
-            newjob_state.name = "create"
-            session.add(newjob_state)
-            session.commit()
+            return True
+        return False
+            
 
         
 
