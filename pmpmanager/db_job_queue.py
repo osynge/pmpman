@@ -20,6 +20,19 @@ class job_que_man(object):
         self.job_class = None
         self.job_runner = db_job_runner.job_runner()
         self.job_runner.session = self.session
+    
+    def _queue_state_cache(self, *args, **kwargs):
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        if session == None:
+            self.log.error("no session")
+            return None
+        output = {}
+        find_excuted = session.query(model.job_state)
+        for find_excuted_one in find_excuted:
+            output[find_excuted_one.name] = int(find_excuted_one.id)
+        return output
         
     def initialise(self, *args, **kwargs) : 
         
@@ -32,6 +45,33 @@ class job_que_man(object):
             new_job_runner.job_class = i
             new_job_runner.save()
                 
+    def quque_display_debug( self, *args, **kwargs) :
+        self.log.debug('queue_dequeue')
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        queue_state_cache = self._queue_state_cache(session = session)
+        output = {}
+        for name in queue_state_cache.keys():
+            find_job_def = session.query(model.job_execution,model.job_def,model.job_namespace,model.job_state).\
+                filter(model.job_state.name == name).\
+                filter(model.job_execution.fk_state == model.job_state.id).\
+                filter(model.job_execution.fk_update == model.job_def.id).\
+                filter(model.job_def.fk_type == model.job_namespace.id).\
+                order_by(model.job_execution.created)
+            
+            details = {}
+            for itme  in find_job_def:
+                job_execution = itme[0]
+                job_def = itme[1]
+                job_namespace = itme[2]
+                job_state = itme[3]
+                key = job_execution.id
+                facts = {}
+                facts["state"] = job_state.id
+                details[key] = facts
+            output[name] = details
+        print output
         
         
     def queue_length(self, *args, **kwargs):
@@ -55,6 +95,9 @@ class job_que_man(object):
         session = kwargs.get('queue_read', None)
         if session == None:
             session = self.session
+        
+        
+        
         
         find_job_def = session.query(model.job_execution,model.job_def,model.job_namespace).\
                 filter(model.job_execution.fk_update == model.job_def.id).\
@@ -103,9 +146,50 @@ class job_que_man(object):
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
+        
+        
+        
+        queue_state_cache = self._queue_state_cache(session = session)
+        did_something = False
+        pending_timeout = 10
+        finished_timeout = 10
+        #datetime to expire 
+        datetime_now = datetime.datetime.now()
+        datetime_timeout_pending = datetime_now - datetime.timedelta(0,pending_timeout)
+        datetime_timeout_finished = datetime_now - datetime.timedelta(0,pending_timeout)
+        
+        # convert state "create" to "pending"
+        
         find_job_def = session.query(model.job_execution,model.job_namespace).\
-                filter(model.job_execution.expired == None).\
-                filter(model.job_execution.returncode == None).\
+                filter(model.job_state.id == queue_state_cache["create"]).\
+                filter(model.job_execution.fk_state == model.job_state.id).\
+                filter(model.job_execution.created < datetime_timeout_pending).\
+                order_by(model.job_execution.created)
+
+        for item in find_job_def:
+            job_execution = item[0]
+            job_execution.fk_state = queue_state_cache["pending"]
+            session.add(job_execution)
+            session.commit()
+        
+        # convert state "finished" to "garbidge" when expired time passed
+        find_job_def = session.query(model.job_execution,model.job_namespace).\
+                filter(model.job_state.id == queue_state_cache["finished"]).\
+                filter(model.job_execution.fk_state == model.job_state.id).\
+                filter(model.job_execution.finshed < datetime_timeout_pending).\
+                order_by(model.job_execution.created)
+        
+        for item in find_job_def:
+            job_execution = item[0]
+            job_execution.fk_state = queue_state_cache["garbidge"]
+            session.add(job_execution)
+            session.commit()
+        
+        # Run pending jobs
+                    
+        find_job_def = session.query(model.job_execution,model.job_namespace).\
+                filter(model.job_state.id == queue_state_cache["pending"]).\
+                filter(model.job_execution.fk_state == model.job_state.id).\
                 order_by(model.job_execution.created)
         #self.log.error('queue_dequeue=%s' % find_job_def.count())
         
@@ -123,20 +207,23 @@ class job_que_man(object):
             
             new_job_runner.run(session = session)
             job_execution.outputjson = new_job_runner.outputjson
-            job_execution.finshed = datetime.datetime.now()
+            job_execution.finshed = datetime_now
             job_execution.returncode = new_job_runner.returncode
             job_execution.cmdln = new_job_runner.cmdln
             job_execution.triggers = new_job_runner.triggers
             job_execution.trig_parameters = new_job_runner.trig_parameters
-            
+            job_execution.fk_state = queue_state_cache["finished"]
             session.add(job_execution)
             session.commit()
-            return True
+            self.quque_display_debug()
+            return True  
         
-
-            
+        
+        
         return False
-        
+    
+    
+    
         
         
 

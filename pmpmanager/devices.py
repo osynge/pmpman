@@ -41,7 +41,7 @@ def initial_data_add_job_state(session,name):
     state_new = model.job_state()
     state_new.name = name
     session.add(state_new)
-
+    session.commit()
 
 def initial_data_add(session):
     for state in [ 
@@ -52,9 +52,6 @@ def initial_data_add(session):
                     "pending"
                 ]:
         initial_data_add_job_state(session,state)
-    
-    session.commit()
-    
     
 
 

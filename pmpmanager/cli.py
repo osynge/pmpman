@@ -6,7 +6,7 @@ from pmpmanager.__version__ import version as pmpman_version
 import json
 import devices
 import lsblk
-
+import time
 import db_job_queue
 import db_job_runner
 # shoudl not be in this function
@@ -140,11 +140,12 @@ class ProcesHandler:
             )
 
         quelength = QM.queue_length(session = session)
-        self.log.debug("cb_pmpman_block_scan:finished")
+        
         while quelength > 0:
+            self.log.debug("cb_pmpman_block_scan:finished=%s" % (quelength))
             output = QM.queue_dequeue(session = session)
-            quelength = 0
-
+            quelength = quelength = QM.queue_length(session = session)
+            time.sleep(10)
         self.log.debug("cb_pmpman_block_scan:finished")
     def cb_pmpman_block_list(self,caller=None):
         self.log.debug("cb_pmpman_block_list")
