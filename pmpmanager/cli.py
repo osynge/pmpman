@@ -108,13 +108,14 @@ class ProcesHandler:
                 cmdln_paramters = "{}",
                 name = "lsblk",
                 uuid = "6d7141d5-e1ee-4ff6-a778-10803521c8a2",
-                state = "created"
+
             )
         QM.job_persist(job_type = "lsblk_query",
                 cmdln_template = "udevadm info -q all -n /dev/%s",
                 cmdln_paramters = '[ "sdb" ]',
                 name = "lsblk_query",
                 uuid = "c297b566-089d-4895-a8c2-a9cc37767174",
+                session = session,
                 state = "created"
             )
 
@@ -123,6 +124,7 @@ class ProcesHandler:
                 cmdln_paramters = '[ "sdb" ]',
                 name = "lsblk_query",
                 uuid = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63",
+                session = session,
                 state = "created"
             )
 
@@ -137,11 +139,12 @@ class ProcesHandler:
                 state = "created"
             )
 
-        quelength = 100
+        quelength = QM.queue_length(session = session)
+        self.log.debug("cb_pmpman_block_scan:finished")
         while quelength > 0:
             output = QM.queue_dequeue(session = session)
             quelength = 0
-        
+
         self.log.debug("cb_pmpman_block_scan:finished")
     def cb_pmpman_block_list(self,caller=None):
         self.log.debug("cb_pmpman_block_list")
