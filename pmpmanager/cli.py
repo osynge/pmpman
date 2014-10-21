@@ -80,13 +80,36 @@ class ProcesHandler:
         self.connect_db()
 
     def cb_pmpman_action_list(self,caller=None):
+        self.log.debug("cb_pmpman_action_list=started")
+        self.connect_db()
+        session = self.database.Session()
+
+        newone = db_job_runner.job_runner()
+        newone.session = session
+        newone.load(session = session, uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3")
+        newone.enqueue(session = session)
+        newone.load(session = session, uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2")
+        newone.enqueue(session = session)
+        newone.load(session = session, uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174")
+        newone.enqueue(session = session)
+        newone.load(session = session, uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63")
+        newone.enqueue(session = session)
+        
+        
+        QM = db_job_queue.job_que_man()
+        QM.session = session
+        QM.initialise()
+        
+        quelength = QM.queue_length(session = session)
+        while quelength > 0:
+            self.log.debug("cb_pmpman_block_scan:finished=%s" % (quelength))
+            output = QM.queue_dequeue(session = session)
+            quelength = quelength = QM.queue_length(session = session)
+            time.sleep(10)
         self.log.debug("cb_pmpman_action_list")
 
-
-
-
     def cb_pmpman_block_scan(self,caller=None):
-        self.log.debug("cb_pmpman_block_scan")
+        self.log.debug("cb_pmpman_block_scan:ended")
         self.connect_db()
         session = self.database.Session()
         #lsblk.updatdatabase(session)

@@ -59,46 +59,63 @@ def initial_data_add(session):
                 ]:
         initial_data_add_job_state(session,state)
     for job_namespace in [
+                    "no_ops",
                     "lsblk_query",
                     "lsblk_read"
                     "udev_query",
                     "udev_read",
                 ]:
         initial_data_add_job_namespace(session,job_namespace)
+    session.commit()
     import db_job_runner
 
     job_runner_lsblk = db_job_runner.job_runner()
     job_runner_lsblk.job_class = "lsblk_query"
-    job_runner_lsblk.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
-    job_runner_lsblk.name = "lsblk"
-    job_runner_lsblk.enqueue()
+    job_runner_lsblk.uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3"
+    job_runner_lsblk.name = "lsblk_query"
     job_runner_lsblk.save(session = session)
-
+    
+    
+    
     job_runner_lsblk_read = db_job_runner.job_runner()
     job_runner_lsblk_read.job_class = "lsblk_read"
     job_runner_lsblk_read.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
     job_runner_lsblk_read.name = "lsblk_read"
-    job_runner_lsblk_read.subscribe_add(job_runner_lsblk.uuid_def)
     job_runner_lsblk_read.save(session = session)
 
     job_runner_udev_query = db_job_runner.job_runner()
     job_runner_udev_query.job_class = "udev_query"
     job_runner_udev_query.uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174"
     job_runner_udev_query.name = "udev_query"
-    job_runner_lsblk_read.subscribe_add(job_runner_lsblk_read.uuid_def)
     job_runner_udev_query.save(session = session)
 
     job_runner_udev_read = db_job_runner.job_runner()
     job_runner_udev_read.job_class = "udev_read"
     job_runner_udev_read.uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63"
     job_runner_udev_read.name = "udev_read"
+    job_runner_udev_read.save(session = session)
+
+    session.commit()
+    
+    job_runner_lsblk.load(session = session)
+    job_runner_lsblk_read.load(session = session)
+    job_runner_udev_query.load(session = session)
+    job_runner_lsblk.load(session = session)
+    
+    session.commit()
+    
+    job_runner_lsblk_read.subscribe_add(job_runner_lsblk.uuid_def)
+    job_runner_lsblk_read.save(session = session)
+    job_runner_udev_query.subscribe_add(job_runner_lsblk_read.uuid_def)
+    job_runner_udev_query.save(session = session)
     job_runner_udev_read.subscribe_add(job_runner_udev_query.uuid_def)
     job_runner_udev_read.save(session = session)
     
     session.commit()
     
-        
-        
+    job_runner_lsblk.enqueue(session = session)
+    
+
 class database_model:
     def __init__(self,databaseConnectionString):
         self.log = logging.getLogger("database_model")
@@ -107,8 +124,8 @@ class database_model:
         self.SessionFactory = sessionmaker(bind=self.engine)
         if self.CheckInittialisingNeeded():
             initial_data_add(self.SessionFactory())
-        
-        
+
+
         inital_quque = db_job_queue.job_que_man()
         inital_quque.session = self.SessionFactory()
         queue_length = inital_quque.queue_length()

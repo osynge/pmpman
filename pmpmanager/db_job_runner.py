@@ -24,7 +24,7 @@ import db_jobs.lsblk_read as job_runner_lsblk_read
 
 import db_jobs.udev_query as job_runner_udev_query
 import db_jobs.udev_read as job_runner_udev_read
-
+import db_jobs.no_ops as job_runner_no_ops
 
 import db_devices as model
 
@@ -37,6 +37,7 @@ class job_runner(object):
     def __init__(self):
         self.log = logging.getLogger("job_runner_facade")
         self.job_classes = {
+            "no_ops" : job_runner_no_ops,
             "kname_new" :  job_runner_udev_read,
             "udev_query" : job_runner_udev_query ,
             "lsblk_query" : job_runner_lsblk_query,
@@ -45,6 +46,7 @@ class job_runner(object):
             "lsblk_read" : job_runner_lsblk_read,
             }
         self.subscribe_list = set([])
+        self.publish_list = set([])
 
     @Property
     def job_class():
@@ -52,21 +54,24 @@ class job_runner(object):
             if hasattr(self, '_job_class'):
                 return self._job_class
             else:
-                return None
+                return "no_ops"
 
         def fset(self, name):
-            self.log.debug("set job_class:%s" % (name))
+            self.log.debug("set job_class:'%s'" % (name))
+            if name == None:
+                name = "no_ops"
+            if not name in self.job_classes.keys():
+                self.log.error("Failed seting job_class to=%s" % (name))
+                self.log.debug('Valid job_class are "%s"' % (self.job_classes.keys()))
+                self.log.info('Defaulting "job_class" value: "no_ops"')
+                name = "no_ops"
+
             if hasattr(self, '_job_class'):
                 if name == self._job_class:
                     self.log.error("dont replay")
                     return
             self._job_class_name = name
-            if not name in self.job_classes.keys():
-                self.log.error("Cant set job_class to=%s" % (name))
-                self.log.info('Valid job_class are ["%s"]' % (self.job_classes.keys()))
-                if hasattr(self, '_job_class'):
-                    del (self._job_runnerImp)
-                return
+
 
 
             tmpJobRnner = self.job_classes[name].job_runner()
@@ -85,6 +90,8 @@ class job_runner(object):
             tmpJobRnner.cmdln_paramters= self.cmdln_paramters
             tmpJobRnner.reocuring = self.reocuring
             tmpJobRnner.subscribe_list = self.subscribe_list
+            tmpJobRnner.publish_list = self.publish_list
+
             if hasattr(self, '_job_class'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
@@ -504,19 +511,24 @@ class job_runner(object):
         if session == None:
             session = self.session
         if session == None:
-            self.log.error("No session set")
+            self.log.error("enqueue:No session set")
             return False
+        uuid_job = kwargs.get('uuid', None)
+        if uuid_job == None:
+            uuid_job = str(uuid.uuid1())
         enqueue_job_runner = job_runner()
         enqueue_job_runner.job_class = self.job_class
+        enqueue_job_runner.uuid_execution = uuid_job
         enqueue_job_runner.uuid_def = self.uuid_def
         enqueue_job_runner.reocuring = self.reocuring
         enqueue_job_runner.cmdln_template = self.cmdln_template
         enqueue_job_runner.cmdln_paramters = self.cmdln_paramters
-        enqueue_job_runner.name = self.name
-        # Now creat an execution ID
-        enqueue_job_runner.uuid_execution = str(uuid.uuid1())
+        
+        
         # Now save queued request
         enqueue_job_runner.save(session = session)
+        session.commit()
+        
         return True
 
     def run(self, *args, **kwargs):
@@ -534,7 +546,7 @@ class job_runner(object):
         if session == None:
             session = self.session
         if session == None:
-            self.log.error("No session set")
+            self.log.error("load:No session set")
             return False
 
         uuid_def = kwargs.get('uuid_def', None)

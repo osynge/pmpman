@@ -3,6 +3,7 @@ import subprocess
 import time
 import pmpmanager.db_devices as model
 import uuid
+from sqlalchemy.orm import aliased
 
 def Property(func):
     return property(**func())
@@ -153,6 +154,63 @@ class job_runner(object):
         session.add(job_def)
         session.commit()
 
+
+
+        subscribers_found = set()
+        publishers_found = set()
+
+        source_job = aliased(model.job_def, name='source_job')
+        dest_job = aliased(model.job_def, name='dest_job')
+
+        query_subscribers = session.query(dest_job).\
+                filter(source_job.uuid == uuid_def).\
+                filter(model.job_triggers.dest == dest_job.id).\
+                filter(model.job_triggers.source == source_job.id)
+
+        for item in query_subscribers:
+            subscribers_found.add(item.uuid)
+        query_publishers = session.query(source_job.uuid).\
+                filter(dest_job.uuid == uuid_def).\
+                filter(model.job_triggers.dest == dest_job.id).\
+                filter(model.job_triggers.source == source_job.id)
+
+        for item in query_publishers:
+            publishers_found.add(item.uuid)
+
+
+        subscribers_missing = self.subscribe_list.difference(subscribers_found)
+        publishers_missing = self.publish_list.difference(subscribers_found)
+        subscribers_extra = subscribers_found.difference(self.subscribe_list)
+        publishers_extra= subscribers_found.difference(self.publish_list)
+
+        self.log.debug("subscribers_missing=%s" % (subscribers_missing))
+        for item in subscribers_missing:
+            query_new = session.query(model.job_def).\
+                filter(model.job_def.uuid == item)
+            for item in query_new:
+                newtrigger = model.job_triggers()
+                newtrigger.source = item.id
+                newtrigger.dest = job_def.id
+                newtrigger.sk_uuid = str(uuid.uuid1())
+                session.add(newtrigger)
+                session.commit()
+
+        self.log.debug("publishers_missing=%s" % (publishers_missing))
+        for item in subscribers_missing:
+            query_new = session.query(model.job_def).\
+                filter(model.job_def.uuid == item)
+            for item in query_new:
+                newtrigger = model.job_triggers()
+                newtrigger.source = job_def.id
+                newtrigger.sk_uuid = str(uuid.uuid1())
+                newtrigger.dest = item.id
+                session.add(newtrigger)
+                session.commit()
+        self.log.debug("subscribers_extra=%s" % (subscribers_extra))
+        self.log.debug("publishers_extra=%s" % (publishers_extra))
+
+
+
         need_uuid_execution = False
         if self.state != None:
             need_uuid_execution = True
@@ -203,6 +261,8 @@ class job_runner(object):
         job_execution.created = self.created
         job_execution.expires = self.expires
         job_execution.expired = self.expired
+
+
         session.add(job_execution)
         session.commit()
         return True
@@ -231,14 +291,50 @@ class job_runner(object):
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution
-        if uuid_execution == None:
-            self.log.error("No uuid_execution set")
-            return False
+
+
+
         query_job_def = session.query(model.job_def).\
                 filter(model.job_def.uuid == uuid_def)
         if query_job_def.count() == 0:
             self.log.error("failed to find uuid_def:%s" % (uuid_def))
             return False
+
+
+        query_job_namespace = session.query(model.job_namespace).\
+                filter(model.job_def.uuid == uuid_def).\
+                filter(model.job_namespace.id == model.job_def.fk_type)
+        if query_job_namespace.count() == 0:
+            self.log.error("failed to find job_namespace:%s" % (uuid_execution))
+            return False
+
+        job_namespace = query_job_namespace.one()
+        job_def = query_job_def.one()
+        self.cmdln_template = job_def.cmdln_template
+        self.cmdln_paramters= job_def.cmdln_paramters
+        self.reocuring = job_def.reocuring
+
+        set_subscribers = set()
+        query_subscribers = session.query(model.job_def).\
+                filter(model.job_def.uuid == uuid_def).\
+                filter(model.job_triggers.source == model.job_def.id)
+        for item in query_subscribers:
+            set_subscribers.add(item.uuid)
+        self.subscribers_list = set_subscribers
+        self.log.info("subscribers=%s" % set_subscribers)
+
+        set_publishers = set()
+        query_publishers = session.query(model.job_def).\
+                filter(model.job_def.uuid == uuid_def).\
+                filter(model.job_triggers.dest == model.job_def.id)
+        for item in query_publishers:
+            set_publishers.add(item.uuid)
+        self.publishers_list = set_publishers
+        self.log.info("publishers=%s" % set_publishers)
+
+        if uuid_execution == None:
+            self.log.debug("No uuid_execution set")
+            return True
 
         query_job_execution = session.query(model.job_execution).\
                 filter(model.job_execution.uuid == uuid_execution)
@@ -246,14 +342,6 @@ class job_runner(object):
             self.log.error("failed to find uuid_def:%s" % (uuid_execution))
             return False
 
-        query_job_namespace = session.query(model.job_namespace).\
-                filter(model.job_execution.uuid == uuid_execution).\
-                filter(model.job_def.uuid == uuid_def).\
-                filter(model.job_def.id == model.job_execution.fk_update).\
-                filter(model.job_namespace.id == model.job_def.fk_type)
-        if query_job_namespace.count() == 0:
-            self.log.error("failed to find job_namespace:%s" % (uuid_execution))
-            return False
 
         query_job_state = session.query(model.job_state).\
                 filter(model.job_execution.uuid == uuid_execution).\
@@ -267,13 +355,6 @@ class job_runner(object):
         job_state= query_job_state.one()
         self.state = job_state.name
 
-        job_namespace = query_job_namespace.one()
-
-        job_def = query_job_def.one()
-        self.cmdln_template = job_def.cmdln_template
-        self.cmdln_paramters= job_def.cmdln_paramters
-        self.reocuring = job_def.reocuring
-
 
         job_execution = query_job_execution.one()
 
@@ -283,6 +364,8 @@ class job_runner(object):
         self.created = job_execution.created
         self.expires = job_execution.expires
         self.expired = job_execution.expired
+
+
 
         return True
 
