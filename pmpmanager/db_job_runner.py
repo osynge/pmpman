@@ -54,26 +54,25 @@ class job_runner(object):
             if hasattr(self, '_job_class'):
                 return self._job_class
             else:
-                return "no_ops"
+                return None
 
         def fset(self, name):
+            self._job_class = name
             self.log.debug("set job_class:'%s'" % (name))
             if name == None:
-                name = "no_ops"
+                raise InputError("Cant be set to None")
+
             if not name in self.job_classes.keys():
                 self.log.error("Failed seting job_class to=%s" % (name))
                 self.log.debug('Valid job_class are "%s"' % (self.job_classes.keys()))
                 self.log.info('Defaulting "job_class" value: "no_ops"')
-                name = "no_ops"
+                raise InputError("Cant be set to:%s" % (name))
+
 
             if hasattr(self, '_job_class'):
                 if name == self._job_class:
                     self.log.error("dont replay")
                     return
-            self._job_class_name = name
-
-
-
             tmpJobRnner = self.job_classes[name].job_runner()
             tmpJobRnner.job_class = name
             tmpJobRnner.session = self.session
@@ -523,12 +522,12 @@ class job_runner(object):
         enqueue_job_runner.reocuring = self.reocuring
         enqueue_job_runner.cmdln_template = self.cmdln_template
         enqueue_job_runner.cmdln_paramters = self.cmdln_paramters
-        
-        
+
+
         # Now save queued request
         enqueue_job_runner.save(session = session)
         session.commit()
-        
+
         return True
 
     def run(self, *args, **kwargs):
