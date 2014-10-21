@@ -34,12 +34,23 @@ class job_que_man(object):
                 
         
         
-    def queue_length(self):
+    def queue_length(self, *args, **kwargs):
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
         output = 0
-        return output
         find_job_def = session.query(model.job_def).\
-            filter(model.job_execution.fk_update == model.job_def.id)
-    
+            filter(model.job_execution.fk_state == model.job_state.id).\
+            filter(model.job_state.name == "create" )
+        
+        createlen = int(find_job_def.count())
+        findpenlen = session.query(model.job_def).\
+            filter(model.job_execution.fk_state == model.job_state.id).\
+            filter(model.job_state.name == "pending" ).count()
+        
+        return createlen + findpenlen
+        
+        
     def queue_read(self, *args, **kwargs):
         session = kwargs.get('queue_read', None)
         if session == None:
