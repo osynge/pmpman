@@ -66,7 +66,8 @@ class job_runner(object):
                 self.log.error("Failed seting job_class to=%s" % (name))
                 self.log.debug('Valid job_class are "%s"' % (self.job_classes.keys()))
                 self.log.info('Defaulting "job_class" value: "no_ops"')
-                raise InputError("Cant be set to:%s" % (name))
+                msg = str("Cant be set to:%s" % (name))
+                raise InputError(msg)
 
 
             if hasattr(self, '_job_class'):
@@ -461,7 +462,9 @@ class job_runner(object):
 
         def fset(self, value):
             if value == None:
-                value = set([])
+                raise InputError("None is invalid")
+
+
             self._subscribe_list = value
             if hasattr(self, '_job_runnerImp'):
                 if self._job_runnerImp != None:
