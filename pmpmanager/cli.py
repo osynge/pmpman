@@ -101,32 +101,33 @@ class ProcesHandler:
         #self.database.job_def_Run(update_type="lsblk")
         #self.database.job_execution_Run(update_type="lsblk")
         QM = db_job_queue.job_que_man()
-        QM.session = self.database.SessionFactory()
+        QM.session = session
         QM.initialise()
-        QM.job_persist(job_type = "lsblk_query",
-                cmdln_template = "lsblk",
-                cmdln_paramters = "{}",
-                name = "lsblk",
-                uuid = "6d7141d5-e1ee-4ff6-a778-10803521c8a2",
-
-            )
-        QM.job_persist(job_type = "lsblk_query",
-                cmdln_template = "udevadm info -q all -n /dev/%s",
-                cmdln_paramters = '[ "sdb" ]',
-                name = "lsblk_query",
-                uuid = "c297b566-089d-4895-a8c2-a9cc37767174",
-                session = session,
-                state = "created"
-            )
-
-        QM.job_persist(job_type = "udev_query",
-                cmdln_template = "udevadm info -q all -n /dev/%s",
-                cmdln_paramters = '[ "sdb" ]',
-                name = "lsblk_query",
-                uuid = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63",
-                session = session,
-                state = "created"
-            )
+        
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.job_class = "lsblk_query"
+        new_job_runner.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
+        new_job_runner.name = "lsblk"
+        new_job_runner.save(session = session)
+        
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.job_class = "lsblk_read"
+        new_job_runner.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
+        new_job_runner.name = "lsblk_read"
+        new_job_runner.save(session = session)
+        
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.job_class = "udev_query"
+        new_job_runner.uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174"
+        new_job_runner.name = "udev_query"
+        new_job_runner.save(session = session)
+        
+        new_job_runner = db_job_runner.job_runner()
+        new_job_runner.job_class = "udev_read"
+        new_job_runner.uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63"
+        new_job_runner.name = "udev_read"
+        new_job_runner.save(session = session)
+        
 
 
 

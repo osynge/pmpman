@@ -37,22 +37,36 @@ import db_job_queue
 
 
 def initial_data_add_job_state(session,name):
-    print "addind"
     state_new = model.job_state()
     state_new.name = name
     session.add(state_new)
     session.commit()
 
+def initial_data_add_job_namespace(session,name):
+    state_new = model.job_namespace()
+    state_new.name = name
+    session.add(state_new)
+    session.commit()
+
+
+
 def initial_data_add(session):
-    for state in [ 
+    for state in [
                     "create",
+                    "pending"
                     "garbidge",
                     "executing",
                     "finished",
-                    "pending"
                 ]:
         initial_data_add_job_state(session,state)
-    
+    for job_namespace in [
+                    "lsblk_query",
+                    "lsblk_read"
+                    "udev_query",
+                    "udev_read",
+                ]:
+        initial_data_add_job_namespace(session,job_namespace)
+
 
 
 class database_model:
@@ -66,13 +80,13 @@ class database_model:
 
     def CheckInittialisingNeeded(self):
         session = self.SessionFactory()
-        find_create_count = session.query(model.job_namespace).count() 
+        find_create_count = session.query(model.job_state).count()
         if find_create_count == 0:
             return True
         return False
-            
 
-        
+
+
 
     def Session(self):
         return self.SessionFactory()

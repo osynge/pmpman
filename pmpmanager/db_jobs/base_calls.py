@@ -134,7 +134,93 @@ class job_runner():
         return runpreloadcommand(cmd,timeout)
     
     def save(self, *args, **kwargs):
-        print 
+        self.log.debug("save")
+        session = kwargs.get('session', None)
+        if session == None:
+            session = self.session
+        if session == None:
+            self.log.error("No session set")
+            return False
+
+        uuid_def = kwargs.get('uuid_def', None)
+        if uuid_def == None:
+           uuid_def = self.uuid_def
+        if uuid_def == None:
+            self.log.error("No uuid_def set")
+            return False
+        
+        uuid_execution = kwargs.get('uuid_execution', None)
+        if uuid_execution == None:
+           uuid_execution = self.uuid_execution
+        
+        query_job_def = session.query(model.job_def).\
+                filter(model.job_def.uuid == uuid_def)
+        
+        if query_job_def.count() == 0:
+            self.log.error("failed to find uuid_def:%s" % (uuid_def))
+            return False
+        
+        job_def = query_job_def.one()
+        job_def.cmdln_template = self.cmdln_template
+        job_def.cmdln_paramters = self.cmdln_paramters
+        job_def.reocuring = self.reocuring
+        session.add(job_def)
+        session.commit()
+        
+        need_uuid_execution = False
+        if self.state != None:
+            need_uuid_execution = True        
+        if not need_uuid_execution:
+            self.log.debug("No execution details set.")
+            return True
+        if uuid_execution == None:
+            self.log.error("No uuid_execution set")
+            return False
+            
+        
+        # Query remaining details
+        
+        query_job_state = session.query(model.job_state).\
+                filter(model.job_execution.uuid == uuid_execution).\
+                filter(model.job_def.uuid == uuid_def).\
+                filter(model.job_def.id == model.job_execution.fk_update).\
+                filter(model.job_state.id == model.job_def.fk_type)
+        if query_job_state.count() == 0:
+            self.log.error("failed to find job_state:%s" % (uuid_execution))
+            return False
+        
+        
+        query_job_execution = session.query(model.job_execution).\
+                filter(model.job_execution.uuid == uuid_execution)
+        if query_job_execution.count() == 0:
+            self.log.error("failed to find uuid_def:%s" % (uuid_execution))
+            return False
+        
+                
+        job_state= query_job_state.one()
+        if self.state != job_state.name:
+            # We have to save the state
+            available_state = session.query(model.job_state).\
+                filter(model.job_state.name == self.state).\
+                count()
+            if available_state == 0:
+                log.critical("Invalid State:" % self.state)
+                return False
+            newState = available_state.one()
+            query_job_execution.fk_state.id()
+            session.add(query_job_execution)
+            session.commit()
+        job_execution = query_job_execution.one()
+        job_execution.cmdln = self.cmdln
+        job_execution.cmdln = self.returncode
+        job_execution.outputjson = self.outputjson
+        job_execution.created = self.created
+        job_execution.expires = self.expires
+        job_execution.expired = self.expired
+        session.add(job_execution)
+        session.commit()
+        
+        ### Old code here ###
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
@@ -161,6 +247,8 @@ class job_runner():
              dest = "dddddd",
              sk_uuid = str(self.uuid_execution)
         )
+        
+        return True
         
         
         

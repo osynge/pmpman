@@ -35,15 +35,7 @@ class job_que_man(object):
         return output
 
     def initialise(self, *args, **kwargs) :
-
-        session = kwargs.get('initialise', None)
-        if session == None:
-            session = self.session
-        new_job_runner = db_job_runner.job_runner()
-        new_job_runner.session = session
-        for i in new_job_runner.job_classes.keys():
-            new_job_runner.job_class = i
-            new_job_runner.save()
+        pass
 
     def quque_display_debug( self, *args, **kwargs) :
         self.log.debug('queue_dequeue')
@@ -312,13 +304,22 @@ class job_que_man(object):
                 filter(model.job_namespace.name == job_type)
 
         ret_job_type = find_job_namespace.one()
+        
+        
+        
+        find_job_def = session.query(model.job_def).\
+                filter(model.job_def.fk_type == ret_job_type.id).\
+                filter(model.job_namespace.name == name)
+        for item in find_job_def:
+            self.log.info(item)
+                
 
         find_job_def = session.query(model.job_def).\
                 filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
-                filter(model.job_def.cmdln_paramters == cmdln_paramters)
-
+                filter(model.job_def.cmdln_paramters == cmdln_paramters).\
+                filter(model.job_def.uuid == job_uuid)
         if find_job_def.count() == 0:
             newjob_def = model.job_def()
             newjob_def.fk_type = ret_job_type.id
@@ -332,11 +333,14 @@ class job_que_man(object):
                 filter(model.job_def.fk_type == ret_job_type.id).\
                 filter(model.job_namespace.name == name).\
                 filter(model.job_def.cmdln_template == cmdln_template).\
-                filter(model.job_def.cmdln_paramters == cmdln_paramters)
+                filter(model.job_def.cmdln_paramters == cmdln_paramters).\
+                filter(model.job_def.uuid == job_uuid)
 
 
         if find_job_def.count() != 1:
             self.log.error("Some thign bad happened")
+            for i in find_job_def:
+                self.log.info(i)
 
         ret_job_details = find_job_def.one()
 
