@@ -58,10 +58,7 @@ def initial_data_add_job_namespace(session,name):
         session.commit()
     
     
-    
-
-
-def initial_data_add(session):
+def initial_data_add_enumerated(session):
     for state in [
                     "create",
                     "pending"
@@ -79,6 +76,9 @@ def initial_data_add(session):
                 ]:
         initial_data_add_job_namespace(session,job_namespace)
     session.commit()
+
+def initial_data_add(session):
+    initial_data_add_enumerated(session)
     import db_job_runner
 
     job_runner_lsblk = db_job_runner.job_runner()

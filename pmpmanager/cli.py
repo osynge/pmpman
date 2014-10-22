@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 import uuid
 
-import queue_display
+#import queue_display
 
 class CliInput:
     def __init__(self):
