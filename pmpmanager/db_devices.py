@@ -57,7 +57,7 @@ class job_def(Base):
     cmdln_paramters = Column(String(1024),unique=False)
     latest = Column(Integer,nullable = True)
     reocuring = Column(Integer,nullable = False)
-    uuid = Column(String(30),unique=False,nullable = False)
+    uuid = Column(String(30),unique=True,nullable = False)
     lifetime = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
         latest = kwargs.get('latest', None)
