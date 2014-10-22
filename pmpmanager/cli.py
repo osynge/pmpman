@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
 import uuid
 
+import queue_display
 
 class CliInput:
     def __init__(self):
@@ -194,6 +195,7 @@ class ProcesHandler:
             'pmpman.action.partition.list' : [ { 'callback' : self.cb_pmpman_action_list } ],
             'pmpman.action.block.list' : [ { 'callback' : self.cb_pmpman_block_list } ],
             'pmpman.action.block.scan' : [ { 'callback' : self.cb_pmpman_block_scan } ],
+            'pmpman.action.queue.display' : [ { 'callback' : self.cb_pmpman_block_scan } ],
 
             }
         self.UI.callbacks_set(parmetes)
@@ -270,6 +272,7 @@ def get_parrameters_cli_init(defaults):
     p.add_option('--list-partitions', action ='store_true',help='Called by udev $name')
     p.add_option('--block-list', action ='store_true',help='Scan All Partitions')
     p.add_option('--block-scan', action ='store_true',help='Scan All Partitions')
+    p.add_option('--queue-display', action ='store_true',help='Scan All Partitions')
 
 
     actions = set()
@@ -330,7 +333,9 @@ def get_parrameters_cli_init(defaults):
 
     if options.block_scan:
         actions.add('pmpman.action.block.scan')
-
+    if options.queue_display:
+        actions.add('pmpman.action.queue.display')
+        
     output["pmpman.cli.actions"] = actions
 
     if options.database:

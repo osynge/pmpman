@@ -29,6 +29,9 @@ import db_jobs.no_ops as job_runner_no_ops
 import db_devices as model
 
 
+
+
+
 class job_runner(object):
     """Facade class for mulitple implementations of a job junner,
     Should be robust for setting the impleemntation or attributes
@@ -57,6 +60,12 @@ class job_runner(object):
                 return None
 
         def fset(self, name):
+            #if hasattr(self, '_job_class'):
+            #    if name == self._job_class:
+            #        self.log.debug("dont replay")
+            #        return
+            
+            
             if name == None:
 
                 raise InputError("None is an invalid value")
@@ -80,10 +89,7 @@ class job_runner(object):
                 raise InputError(msg)
 
 
-            if hasattr(self, '_job_class'):
-                if name == self._job_class:
-                    self.log.error("dont replay")
-                    return
+            
             tmpJobRnner = self.job_classes[name].job_runner()
             tmpJobRnner.job_class = name
             tmpJobRnner.session = self.session
@@ -102,7 +108,7 @@ class job_runner(object):
             tmpJobRnner.subscribe_list = self.subscribe_list
             tmpJobRnner.publish_list = self.publish_list
 
-            if hasattr(self, '_job_class'):
+            if hasattr(self, '_job_runnerImp'):
                 del (self._job_runnerImp)
             self._job_runnerImp = tmpJobRnner
 
