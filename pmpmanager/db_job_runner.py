@@ -57,7 +57,17 @@ class job_runner(object):
                 return None
 
         def fset(self, name):
-            self._job_class = name
+            if name == None:
+
+                raise InputError("None is an invalid value")
+            try:
+                self._job_class = name
+            except pmpmanager.db_job_runner.InputError, E:
+                print E.msg
+                pass
+            
+
+                
             self.log.debug("set job_class:'%s'" % (name))
             if name == None:
                 raise InputError("Cant be set to None")
@@ -498,6 +508,35 @@ class job_runner(object):
         def fdel(self):
             del self._publish_list
         return locals()
+    
+    @Property
+    def uuid_req():
+        doc = "Get a persistent UUID for this operation"
+        def fget(self):
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if hasattr(self._job_runnerImp,'uuid_req'):
+                        return self._job_runnerImp.uuid_req
+                    else:
+                        return None
+            if hasattr(self, '_uuid_req'):
+                return self._uuid_req
+
+        def fset(self, value):
+            if value == None:
+                value = set([])
+            self._uuid_req = value
+            if hasattr(self, '_job_runnerImp'):
+                if self._job_runnerImp != None:
+                    if self._job_runnerImp.uuid_req != value:
+                        self._job_runnerImp.uuid_req = value
+        def fdel(self):
+            del self._uuid_req
+        return locals()
+    
+    
+    
+    
     def subscribe_add(self, subscribe_uuid, **kwargs):
         old_subscribe = self.subscribe_list
         old_subscribe.add(subscribe_uuid)
@@ -519,7 +558,8 @@ class job_runner(object):
         if uuid_job == None:
             uuid_job = str(uuid.uuid1())
         enqueue_job_runner = job_runner()
-        enqueue_job_runner.job_class = self.job_class
+        if self.job_class != None:
+            enqueue_job_runner.job_class = self.job_class
         enqueue_job_runner.uuid_execution = uuid_job
         enqueue_job_runner.uuid_def = self.uuid_def
         enqueue_job_runner.reocuring = self.reocuring
@@ -557,13 +597,20 @@ class job_runner(object):
         if uuid_def == None:
             self.log.error("No uuid_def set")
             return False
-
+        
+        uuid_req = kwargs.get('uuid_req', None)
+        if uuid_req == None:
+           uuid_req = self.uuid_req
+           
+        if uuid_req == None:
+            self.log.error("No uuid_req set")
+            raise InputError("No uuid_req set")
+            
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution
         if uuid_execution == None:
-            self.log.error("No uuid_execution set")
-            return False
+            raise InputError("No uuid_execution set")
         query_job_def = session.query(model.job_def).\
                 filter(model.job_def.uuid == uuid_def)
         if query_job_def.count() == 0:
@@ -573,8 +620,9 @@ class job_runner(object):
         query_job_execution = session.query(model.job_execution).\
                 filter(model.job_execution.uuid == uuid_execution)
         if query_job_execution.count() == 0:
-            self.log.error("failed to find uuid_def:%s" % (uuid_execution))
-            return False
+            msg = "failed to find uuid_def:%s" % (uuid_execution)
+            self.log.error(msg)
+            raise InputError(msg)
 
         query_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_execution.uuid == uuid_execution).\

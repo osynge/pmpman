@@ -23,6 +23,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 import pmpmanager.db_devices as model
+import pmpmanager.devices as  devices
+import pmpmanager.db_job_runner  as db_job_runner
+
+
+
 import logging
 
 class TestJobRunnerFacard(unittest.TestCase):
@@ -62,3 +67,65 @@ class TestJobRunnerFacard(unittest.TestCase):
             self.log.debug(allowed_class)
             new.job_class = allowed_class
             self.log.debug(new.job_class)
+
+
+    def test_job_initalise(self):
+        session = self.SessionFactory()
+        for state in [
+                        "create",
+                        "pending"
+                        "garbidge",
+                        "executing",
+                        "finished",
+                    ]:
+            devices.initial_data_add_job_state(session,state)
+        for job_namespace in [
+                        "no_ops",
+                        "lsblk_query",
+                        "lsblk_read"
+                        "udev_query",
+                        "udev_read",
+                    ]:
+            devices.initial_data_add_job_namespace(session,job_namespace)
+        session.commit()
+
+        job_runner_lsblk = db_job_runner.job_runner()
+        job_runner_lsblk.job_class = "lsblk_query"
+        job_runner_lsblk.uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3"
+        job_runner_lsblk.name = "lsblk_query"
+        job_runner_lsblk.save(session = session)
+
+
+
+        job_runner_lsblk_read = db_job_runner.job_runner()
+        job_runner_lsblk_read.job_class = "lsblk_read"
+        job_runner_lsblk_read.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
+        job_runner_lsblk_read.name = "lsblk_read"
+        job_runner_lsblk_read.save(session = session)
+
+        job_runner_udev_query = db_job_runner.job_runner()
+        job_runner_udev_query.job_class = "udev_query"
+        job_runner_udev_query.uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174"
+        job_runner_udev_query.name = "udev_query"
+        job_runner_udev_query.save(session = session)
+
+        job_runner_udev_read = db_job_runner.job_runner()
+        job_runner_udev_read.job_class = "udev_read"
+        job_runner_udev_read.uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63"
+        job_runner_udev_read.name = "udev_read"
+        job_runner_udev_read.save(session = session)
+
+        session.commit()
+
+
+        job_runner_lsblk_read.subscribe_add(job_runner_lsblk.uuid_def)
+        job_runner_lsblk_read.save(session = session)
+        job_runner_udev_query.subscribe_add(job_runner_lsblk_read.uuid_def)
+        job_runner_udev_query.save(session = session)
+        job_runner_udev_read.subscribe_add(job_runner_udev_query.uuid_def)
+        job_runner_udev_read.save(session = session)
+
+        session.commit()
+
+        job_runner_lsblk.enqueue(session = session)
+

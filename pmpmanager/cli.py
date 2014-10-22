@@ -14,6 +14,7 @@ import pmpmanager.db_devices as model
 if __name__ == "__main__":
     main()
 
+import uuid
 
 
 class CliInput:
@@ -86,20 +87,42 @@ class ProcesHandler:
 
         newone = db_job_runner.job_runner()
         newone.session = session
-        newone.load(session = session, uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3")
+        uuid_req = str(uuid.uuid1())
+        uuid_execution = str(uuid.uuid1())
+        self.log.debug("uuid_req=%s" % (uuid_req))
+        self.log.debug("uuid_execution=%s" % (uuid_execution))
+
+        newone.load(session = session,
+            uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3",
+            uuid_req = uuid_req,
+            uuid_execution = uuid_execution,
+            )
         newone.enqueue(session = session)
-        newone.load(session = session, uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2")
-        newone.enqueue(session = session)
-        newone.load(session = session, uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174")
-        newone.enqueue(session = session)
-        newone.load(session = session, uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63")
-        newone.enqueue(session = session)
-        
-        
+        newone.load(session = session,
+            uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2",
+            uuid_execution = str(uuid.uuid1()),
+            uuid_req = str(uuid.uuid1()),
+            )
+        newone.enqueue(session = session,uuid_req = uuid.uuid1())
+        newone.load(session = session,
+            uuid_def = "c297b566-089d-4895-a8c2-a9cc37767174",
+            uuid_execution = str(uuid.uuid1()),
+            uuid_req = str(uuid.uuid1()),
+            )
+
+        newone.enqueue(session = session,uuid_req = uuid.uuid1())
+        newone.load(session = session, 
+            uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63",
+            uuid_execution = str(uuid.uuid1()),
+            uuid_req = str(uuid.uuid1()),
+            )
+        newone.enqueue(session = session,uuid_req = uuid.uuid1())
+
+
         QM = db_job_queue.job_que_man()
         QM.session = session
         QM.initialise()
-        
+
         quelength = QM.queue_length(session = session)
         while quelength > 0:
             self.log.debug("cb_pmpman_block_scan:finished=%s" % (quelength))

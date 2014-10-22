@@ -37,16 +37,28 @@ import db_job_queue
 
 
 def initial_data_add_job_state(session,name):
-    state_new = model.job_state()
-    state_new.name = name
-    session.add(state_new)
-    session.commit()
+    
+    found = session.query(model.job_state).\
+            filter(name == model.job_state.name)
+    if found.count() == 0:
+        state_new = model.job_state()
+        state_new.name = name
+        session.add(state_new)
+        session.commit()
+    
 
 def initial_data_add_job_namespace(session,name):
-    state_new = model.job_namespace()
-    state_new.name = name
-    session.add(state_new)
-    session.commit()
+    
+    found = session.query(model.job_namespace).\
+            filter(name == model.job_namespace.name)
+    if found.count() == 0:
+        state_new = model.job_state()
+        state_new.name = name
+        session.add(state_new)
+        session.commit()
+    
+    
+    
 
 
 def initial_data_add(session):
@@ -97,12 +109,6 @@ def initial_data_add(session):
 
     session.commit()
     
-    job_runner_lsblk.load(session = session)
-    job_runner_lsblk_read.load(session = session)
-    job_runner_udev_query.load(session = session)
-    job_runner_lsblk.load(session = session)
-    
-    session.commit()
     
     job_runner_lsblk_read.subscribe_add(job_runner_lsblk.uuid_def)
     job_runner_lsblk_read.save(session = session)
