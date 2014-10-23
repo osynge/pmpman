@@ -34,9 +34,6 @@ class job_que_man(object):
             output[find_excuted_one.name] = int(find_excuted_one.id)
         return output
 
-    def initialise(self, *args, **kwargs) :
-        pass
-
     def quque_display_debug( self, *args, **kwargs) :
         self.log.debug('queue_dequeue')
         session = kwargs.get('session', None)

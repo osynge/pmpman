@@ -1,8 +1,15 @@
+import sys, os
+
+
+sys.path = [os.path.abspath(os.path.dirname(os.path.dirname(__file__)))] + sys.path
+
+
+
 from pmpmanager.db_job_runner import job_runner, InputError
 
 import unittest
 
-
+import nose
 
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, Boolean, DateTime
@@ -27,13 +34,15 @@ import pmpmanager.devices as  devices
 import pmpmanager.db_job_runner  as db_job_runner
 
 
-
+import tempfile
 import logging
 
 class TestJobRunnerFacard(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobRunnerFacard")
-        databaseConnectionString = 'sqlite:///pmpman_test.db'
+        
+        f = tempfile.NamedTemporaryFile(delete=False)
+        databaseConnectionString = "sqlite:///%s" % (f.name)
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
@@ -129,3 +138,10 @@ class TestJobRunnerFacard(unittest.TestCase):
 
         job_runner_lsblk.enqueue(session = session)
 
+
+if __name__ == "__main__":
+    logging.basicConfig()
+    LoggingLevel = logging.WARNING
+    logging.basicConfig(level=LoggingLevel)
+    log = logging.getLogger("main")
+    nose.runmodule()

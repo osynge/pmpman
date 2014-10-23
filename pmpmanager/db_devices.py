@@ -57,7 +57,7 @@ class job_def(Base):
     cmdln_paramters = Column(String(1024),unique=False)
     latest = Column(Integer,nullable = True)
     reocuring = Column(Integer,nullable = False)
-    uuid = Column(String(30),unique=True,nullable = False)
+    uuid_job_def = Column(String(30),unique=True, nullable = False)
     lifetime = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
         latest = kwargs.get('latest', None)
@@ -86,7 +86,7 @@ class job_execution(Base):
     fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     fk_state = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     cmdln = Column(String(1024),unique=False,nullable = True)
-    uuid = Column(String(30),unique=False,nullable = False)
+    uuid_job_execution = Column(String(30),unique=True,nullable = False)
     
     
     returncode = Column(Integer,nullable = True)
@@ -128,7 +128,16 @@ class job_execution(Base):
             self.cmdln = cammand_line
         self.triggers = kwargs.get('triggers', None)
         self.trig_parameters = kwargs.get('trig_parameters', "[]")
-        this_uuid = kwargs.get('uuid', None)
+        this_uuid_opt_01 = kwargs.get('uuid', None)
+        this_uuid_opt_02 = kwargs.get('uuid_job_execution', None)
+        
+        # pick best default
+        
+        this_uuid = this_uuid_opt_01
+        if this_uuid_opt_02 != None:
+            this_uuid = this_uuid_opt_02
+            
+            
         if this_uuid == None:
             self.uuid = str(uuid.uuid4())
         else:
@@ -162,14 +171,11 @@ class job_triggers(Base):
 class Block(Base):
     __tablename__ = 'Block'
     id = Column(Integer, primary_key=True)
-    fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
-    devName= Column(String(100),nullable = False,unique=True)
-    
-    idVendor = Column(String(100),unique=False)
-    idProduct = Column(String(100),nullable = True)
+    devPath = Column(String(255),nullable = False,unique=True)
     devicenodes_major = Column(String(10),nullable = True)
     devicenodes_minor = Column(String(10),nullable = True)
     device_removable = Column(Integer,nullable = True)
+    
     def __init__(self, *args, **kwargs):
         
         idVendor = kwargs.get('idVendor', None)
@@ -191,16 +197,137 @@ class Block(Base):
         
         
     def __repr__(self):
-        return "<USB_Bus_Hw('%s')>" % (self.subject)
+        return "<Block('%s')>" % (self.devPath)
+
+
+
+        
+class BlockUpdateUdev(Base):
+    __tablename__ = 'BlockUpdateUdev'
+    id = Column(Integer, primary_key=True)
+    
+    created = Column(DateTime,nullable = False)
+    
+    devName= Column(String(100),nullable = False,unique=True)
+    devPath = Column(String(255),nullable = False,unique=True)
+    
+    
+    
+    devicenodes_major = Column(String(10),nullable = True)
+    devicenodes_minor = Column(String(10),nullable = True)
+    device_removable = Column(Integer,nullable = True)
+    
+    
+    udev_id_vendor = Column(String(100),unique=False)
+    udev_id_vendor_id = Column(String(100),unique=False)
+    udev_id_vendor_enc = Column(String(100),unique=False)
+    udev_id_product = Column(String(100),nullable = True)
+    udev_id_model = Column(String(100),nullable = True)
+    udev_id_fs_label_enc = Column(String(100),nullable = True)
+    udev_id_fs_label = Column(String(100),nullable = True)
+    udev_id_fs_type = Column(String(100),nullable = True)
+    udev_id_fs_usage = Column(String(100),nullable = True)
+    udev_id_fs_uuid = Column(String(100),nullable = True)
+    udev_id_fs_uuid_enc = Column(String(100),nullable = True)
+    udev_id_version = Column(String(100),nullable = True)
+    udev_id_fs_model = Column(String(100),nullable = True)
+    udev_id_fs_model_enc = Column(String(100),nullable = True)
+    udev_id_fs_model_id = Column(String(100),nullable = True)
+    udev_id_serial = Column(String(100),nullable = True)
+    udev_id_serial_short = Column(String(100),nullable = True)
+    udev_id_type = Column(String(100),nullable = True)
+    udev_id_udiscs_partiton_scheme = Column(String(10),nullable = True)
+    udev_id_udiscs_partiton_size = Column(Integer,nullable = True)
+
+    def __init__(self, *args, **kwargs):
+        
+        idVendor = kwargs.get('idVendor', None)
+        if idVendor != None:
+           self.idVendor = uuid.uuid()
+
+        idProduct = kwargs.get('idProduct', None)
+        if idProduct != None:
+           self.idProduct = idProduct
+        devicenodes_major = kwargs.get('devicenodes_major', None)
+        if devicenodes_major != None:
+           self.devicenodes_major = devicenodes_major
+        devicenodes_minor = kwargs.get('devicenodes_minor', None)
+        if devicenodes_minor != None:
+           self.devicenodes_minor = devicenodes_minor
+        device_removable = kwargs.get('device_removable', None)
+        if device_removable != None:
+           self.device_removable = device_removable
+        
+        
+    def __repr__(self):
+        return "<Block('%s')>" % (self.devPath)
+
+
+
+        
+class BlockUpdateLsblk(Base):
+    __tablename__ = 'BlockUpdateLsblk'
+    id = Column(Integer, primary_key=True)
+    devName= Column(String(100),nullable = False,unique=True)
+    devPath = Column(String(255),nullable = False,unique=True)
+    
+    
+    created = Column(DateTime,nullable = False)
+    
+    
+    devicenodes_major = Column(String(10),nullable = True)
+    devicenodes_minor = Column(String(10),nullable = True)
+    device_removable = Column(Integer,nullable = True)
+    
+    
+
+    
+    lsblk_fstype = Column(Integer,nullable = True)
+    lsblk_group = Column(Integer,nullable = True)
+    lsblk_mode = Column(Integer,nullable = True)
+    lsblk_mountpoint = Column(Integer,nullable = True)
+    lsblk_name = Column(Integer,nullable = True)
+    lsblk_owner = Column(Integer,nullable = True)
+    lsblk_partuuid = Column(Integer,nullable = True)
+    lsblk_rm = Column(Integer,nullable = True)
+
+    lsblk_serial = Column(Integer,nullable = True)
+    lsblk_size = Column(Integer,nullable = True)
+    lsblk_uuid = Column(Integer,nullable = True)
+    lsblk_vendor = Column(Integer,nullable = True)
+    lsblk_wwn = Column(Integer,nullable = True)
+    def __init__(self, *args, **kwargs):
+        
+        idVendor = kwargs.get('idVendor', None)
+        if idVendor != None:
+           self.idVendor = uuid.uuid()
+
+        idProduct = kwargs.get('idProduct', None)
+        if idProduct != None:
+           self.idProduct = idProduct
+        devicenodes_major = kwargs.get('devicenodes_major', None)
+        if devicenodes_major != None:
+           self.devicenodes_major = devicenodes_major
+        devicenodes_minor = kwargs.get('devicenodes_minor', None)
+        if devicenodes_minor != None:
+           self.devicenodes_minor = devicenodes_minor
+        device_removable = kwargs.get('device_removable', None)
+        if device_removable != None:
+           self.device_removable = device_removable
+        
+        
+    def __repr__(self):
+        return "<Block('%s')>" % (self.devPath)
+
+
+
 
 
 class FilesystemType(Base):
     __tablename__ = 'FilesystemType'
     id = Column(Integer, primary_key=True)
     fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"))
     name = Column(String(64),nullable = True,unique=True)
-    
     key = Column(String(200),nullable = False)
     value = Column(String(200),nullable = False)
     # explicit/composite unique constraint.  'name' is optional.

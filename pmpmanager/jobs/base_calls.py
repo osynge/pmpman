@@ -76,7 +76,7 @@ def runpreloadcommand(cmd,timeout):
             break
     return (processRc,stdout,stderr)
 
-class job_runner(object):
+class job_exec(object):
 
 
     def store_job_triggers(self, *args, **kwargs):
@@ -99,33 +99,28 @@ class job_runner(object):
             self.log.error("No session set")
             return False
 
-        uuid_def = kwargs.get('uuid_def', None)
-        if uuid_def == None:
-            uuid_def = self.uuid_def
-        if uuid_def == None:
-            self.log.error("No uuid_def set")
-            return False
-        uuid_job_def = kwargs.get('uuid_job_def', None)
-        if uuid_job_def == None:
-            if hasattr(self, 'uuid_job_def'):
-                uuid_job_def = self.uuid_job_def
-        if uuid_job_def == None:
-            self.log.error("No uuid_def set")
-            return False
-        
-        
-        
         job_class = kwargs.get('job_class', None)
         if job_class == None:
            job_class = self.job_class
         if job_class == None:
             self.log.error("No job_class set")
             return False
+            
+        uuid_tempate = kwargs.get('uuid_tempate', None)
+        if uuid_tempate == None:
+           uuid_tempate = self.uuid_tempate
+        if uuid_tempate == None:
+            self.log.error("No uuid_tempate set")
+            return False
+        
+        
         # Now the ones we dont need
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution
-
+        if uuid_execution == None:
+            self.log.error("No uuid_execution set")
+            return False
         # Finished input validation
 
         query_job_namespace = session.query(model.job_namespace).\
@@ -141,25 +136,27 @@ class job_runner(object):
         job_namespace = query_job_namespace.one()
 
         query_job_def = session.query(model.job_def).\
-                filter(model.job_def.uuid_job_def == uuid_def)
+                filter(model.job_execution.uuid == uuid_tempate)
 
         if query_job_def.count() == 0:
+            self.log.error("Not found")
             job_def = model.job_def()
+            
             job_def.fk_type = job_namespace.id
             job_def.cmdln_template = self.cmdln_template
-            job_def.cmdln_paramters = self.cmdln_paramters
-            job_def.reocuring = self.reocuring
-            job_def.uuid = uuid_def
-            job_def.uuid_job_def = uuid_job_def
+            job_def.uuid = uuid_execution
             session.add(job_def)
             session.commit()
             query_job_def = session.query(model.job_def).\
-                filter(model.job_def.uuid == uuid_def)
-
+                filter(model.job_execution.uuid == uuid_execution)
+            self.log.error("ssssssssssstgggsssSSS")
+        if (query_job_def.count() == 0):
+            self.log.error("ssssssssssssssSSS")
+            
         job_def = query_job_def.one()
         job_def.cmdln_template = self.cmdln_template
         job_def.cmdln_paramters = self.cmdln_paramters
-        job_def.reocuring = self.reocuring
+
         job_def.fk_type = job_namespace.id
         session.add(job_def)
         session.commit()
@@ -322,7 +319,7 @@ class job_runner(object):
         job_def = query_job_def.one()
         self.cmdln_template = job_def.cmdln_template
         self.cmdln_paramters= job_def.cmdln_paramters
-        self.reocuring = job_def.reocuring
+
 
         set_subscribers = set()
         query_subscribers = session.query(model.job_def).\
@@ -379,67 +376,3 @@ class job_runner(object):
 
         return True
 
-
-
-    @Property
-    def arguments():
-        doc = "Remote upload prefix"
-
-        def fget(self):
-            return self._arguments
-
-        def fset(self, value):
-            self._arguments = value
-
-        def fdel(self):
-            del self._arguments
-        return locals()
-
-    @Property
-    def cmdln_template():
-        doc = "Remote upload prefix"
-
-        def fget(self):
-            if self._cmdln_template == None:
-                return ""
-            return self._cmdln_template
-
-        def fset(self, value):
-            self._cmdln_template = value
-
-        def fdel(self):
-            del self._cmdln_template
-        return locals()
-
-    @Property
-    def reocuring():
-        doc = "Remote upload prefix"
-
-        def fget(self):
-            if self._reocuring == None:
-                return ""
-            return self._reocuring
-
-        def fset(self, value):
-            self._reocuring = value
-
-        def fdel(self):
-            del self._reocuring
-        return locals()
-
-    @Property
-    def uuid_def():
-        doc = "Remote upload prefix"
-
-        def fget(self):
-            if self._uuid_def == None:
-                self._uuid_def = str(uuid.uuid1())
-            return self._uuid_def
-
-        def fset(self, value):
-            self._uuid_def = value
-
-
-        def fdel(self):
-            del self._uuid_def
-        return locals()

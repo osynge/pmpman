@@ -53,7 +53,6 @@ class job_runner(bass_job_runner):
         instance_query = session.query(model.job_namespace,model.job_def,model.job_execution).\
             filter(model.job_execution.fk_update == model.job_def.id).\
             filter(model.job_def.fk_type == model.job_namespace.id).\
-            filter(model.job_namespace.name == "lsblk_query").\
             order_by(model.job_execution.created)
         self.log.warning("count=%s" % instance_query.count())
         for instance in instance_query:
