@@ -4,7 +4,7 @@ pmpman-0.0.2
 
  * Reviced internal represention of jobs. 
  * Use of surogate keys as much for coding :)
- * Little bit of setup free must make caching soolution.
+ * Little bit of setup free must make caching solution.
 
 pmpman-0.0.1
 
