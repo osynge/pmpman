@@ -10,6 +10,7 @@ import nose
 import pmpmanager.job_exec  
 
 
+import pmpmanager.initialise_db as devices
 
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, Boolean, DateTime
@@ -30,7 +31,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 import pmpmanager.db_devices as model
-import pmpmanager.initialise_db as  devices
+
+import pmpmanager.initialise_db as devices
+
+
+
 import pmpmanager.job_exec as job_exec
 
 

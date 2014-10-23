@@ -46,10 +46,8 @@ import tempfile
 import pmpmanager.db_job_queue as db_job_queue
 
 from sqlalchemy.orm import aliased
-
+import pmpmanager.initialise_db as devices
 from uuid import uuid4 as uuidgen
-
-import pmpmanager.initialise_db as  devices
 
 class Test_job_manager_can_launch(unittest.TestCase):
     def setUp(self):

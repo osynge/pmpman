@@ -33,7 +33,7 @@ import json
 
 
 import pmpmanager.db_devices as model
-import pmpmanager.devices as  devices
+import pmpmanager.initialise_db as devices
 import pmpmanager.job_exec as job_exec
 import pmpmanager.job_manage as job_manage
 
