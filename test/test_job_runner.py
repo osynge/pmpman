@@ -1,41 +1,29 @@
 import sys, os
-
-
 sys.path = [os.path.abspath(os.path.dirname(os.path.dirname(__file__)))] + sys.path
-
-
-
 from pmpmanager.db_job_runner import job_runner, InputError
-
 import unittest
-
 import nose
-
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import mapper
-
 from sqlalchemy import ForeignKey
-
 from sqlalchemy.orm import backref
 try:
     from sqlalchemy.orm import relationship
 except:
     from sqlalchemy.orm import relation as relationship
 
-
-
 from sqlalchemy import Sequence
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 import pmpmanager.db_devices as model
-import pmpmanager.devices as  devices
+import pmpmanager.initialise_db as devices
 import pmpmanager.db_job_runner  as db_job_runner
-
 
 import tempfile
 import logging
+
 
 class TestJobRunnerFacard(unittest.TestCase):
     def setUp(self):
