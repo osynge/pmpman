@@ -1,5 +1,11 @@
 Changelog
 
-pmpman-0.0.5
+pmpman-0.0.2
+
+ * Reviced internal represention of jobs. 
+ * Use of surogate keys as much for coding :)
+ * Little bit of setup free must make caching soolution.
+
+pmpman-0.0.1
 
  * structure: Getting structure for pmpman
