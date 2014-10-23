@@ -260,7 +260,7 @@ class BlockUpdateUdev(Base):
         
         
     def __repr__(self):
-        return "<Block('%s')>" % (self.devPath)
+        return "<BlockUpdateUdev('%s')>" % (self.devPath)
 
 
 
@@ -337,7 +337,7 @@ class FilesystemType(Base):
         self.key = key
         self.value = value
     def __repr__(self):
-        return "<EndorserMetadata('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+        return "<FilesystemType('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 
 
 
@@ -355,14 +355,14 @@ class Filesystem(Base):
         self.key = key
         self.value = value
     def __repr__(self):
-        return "<EndorserMetadata('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+        return "<Filesystem('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 
 
 
 class Mount(Base):
     __tablename__ = 'Mount'
     id = Column(Integer, primary_key=True)
-    fkEndorser = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
     mountpoint = Column(String(512),nullable = True,unique=True)
     key = Column(String(200),nullable = False)
     value = Column(String(200),nullable = False)
@@ -373,7 +373,24 @@ class Mount(Base):
         self.key = key
         self.value = value
     def __repr__(self):
-        return "<EndorserMetadata('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+        return "<Mount('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
+
+class ManagedFiles(Base):
+    __tablename__ = 'ManagedFiles'
+    id = Column(Integer, primary_key=True)
+    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    mountpoint = Column(String(512),nullable = True,unique=True)
+    key = Column(String(200),nullable = False)
+    value = Column(String(200),nullable = False)
+    # explicit/composite unique constraint.  'name' is optional.
+    UniqueConstraint('fkEndorser', 'key')
+    def __init__(self,imagelist,key,value):
+        self.fkEndorser = imagelist
+        self.key = key
+        self.value = value
+    def __repr__(self):
+        return "<ManagedFiles('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 
 
 
