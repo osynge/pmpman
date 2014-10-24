@@ -12,9 +12,7 @@ class job_que_man(object):
     def __init__(self):
         self.log = logging.getLogger("job_que_man")
         self._job_runnerImp = None
-        self._flags = None
         self.session = None
-        self.job_class = None
 
     def _queue_state_cache(self, *args, **kwargs):
         session = kwargs.get('session', None)
