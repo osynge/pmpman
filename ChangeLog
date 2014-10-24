@@ -1,5 +1,11 @@
 Changelog
 
+pmpman-0.0.3
+
+ * Extended test suite.
+ * Changed DB schema.
+ * Added mount information.
+
 pmpman-0.0.2
 
  * Reviced internal represention of jobs. 
