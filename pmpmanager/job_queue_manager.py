@@ -1,6 +1,3 @@
-import db_job_runner
-
-
 import db_devices as model
 import logging
 
@@ -18,8 +15,6 @@ class job_que_man(object):
         self._flags = None
         self.session = None
         self.job_class = None
-        self.job_runner = db_job_runner.job_runner()
-        self.job_runner.session = self.session
 
     def _queue_state_cache(self, *args, **kwargs):
         session = kwargs.get('session', None)
