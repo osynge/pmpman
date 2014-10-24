@@ -355,26 +355,32 @@ class FileSystem(Base):
 class MountPoint(Base):
     __tablename__ = 'MountPoint'
     id = Column(Integer, primary_key=True)
-    mountpoint = Column(String(512),nullable = True,unique=True)
+    mountpoint = Column(String(512),nullable = False,unique=True)
     def __init__(self, *args, **kwargs):
-        self.fkEndorser = imagelist
-        self.key = key
-        self.value = value
+        mountpoint = kwargs.get('mountpoint', None)
+        if mountpoint != None:
+           self.mountpoint = mountpoint
     def __repr__(self):
-        return "<MountPoint('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+        return "<MountPoint('%s')>" % (self.mountpoint)
 
 
 
 class Mount(Base):
     __tablename__ = 'Mount'
     id = Column(Integer, primary_key=True)
-    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    fk_mountpoint = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    fk_filesystem = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    fk_mountpoint = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    fk_filesystem = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = True)
     def __init__(self, *args, **kwargs):
-        self.fkEndorser = imagelist
-        self.key = key
-        self.value = value
+        fk_block = kwargs.get('fk_block', None)
+        if fk_block != None:
+           self.fk_block = fk_block
+        fk_mountpoint = kwargs.get('fk_mountpoint', None)
+        if fk_mountpoint != None:
+           self.fk_mountpoint = fk_mountpoint
+        fk_filesystem = kwargs.get('fk_filesystem', None)
+        if fk_filesystem != None:
+           self.fk_filesystem = fk_filesystem
     def __repr__(self):
         return "<Mount('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 
@@ -382,15 +388,9 @@ class FileStore(Base):
     __tablename__ = 'FileStore'
     id = Column(Integer, primary_key=True)
     id_fs_type = Column(Integer, ForeignKey(FileSystemType.id, onupdate="CASCADE", ondelete="CASCADE"))
-    mountpoint = Column(String(512),nullable = True,unique=True)
-    key = Column(String(200),nullable = False)
-    value = Column(String(200),nullable = False)
-    # explicit/composite unique constraint.  'name' is optional.
-    UniqueConstraint('fkEndorser', 'key')
     def __init__(self, *args, **kwargs):
-        self.fkEndorser = imagelist
-        self.key = key
-        self.value = value
+        pass
+
     def __repr__(self):
         return "<Filesystem('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 

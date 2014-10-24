@@ -156,55 +156,105 @@ class job_exec(bass_job_exec):
 
         json_input = json.loads(self.inputjson)
 
-        mounts_found = set()
-        mounts_queried = set()
+        block_mounts_unfiltered_found = set()
+
 
         mounts_known = set()
         for item in json_input.keys():
-            self.log.error("item=%s" % item)
-            mounts_found.add(item)
-
-
-        mount_query = session.query(model.Mount)
-        for item in mount_query:
-            mounts_queried.add(item.devPath)
-        self.log.debug("mounts_queried=%s" % mounts_queried)
-        self.log.debug("mounts_found=%s" % mounts_found)
-        mounts_extra = mounts_queried.difference(mounts_found)
-        mounts_missing = mounts_found.difference(mounts_queried)
-        self.log.debug("mounts_extra=%s" % mounts_extra)
-        self.log.debug("mounts_missing=%s" % mounts_missing)
-
+            #self.log.error("json_input[%s]=%s" % (item,json_input[item]))
+            block_mounts_unfiltered_found.add(item)
         blocks_known = set()
         block_query = session.query(model.Block)
         for item in block_query:
             blocks_known.add(item.devPath)
-        extra = mounts_found.difference(blocks_known)
-        missing = blocks_known.difference(mounts_found)
-        mounted_blocks = blocks_known.intersection(mounts_found)
+
+        #self.log.debug("blocks_known=%s" % blocks_known)
+
+        block_mounts_filtered_found = blocks_known.intersection(block_mounts_unfiltered_found)
+        self.log.error("block_mounts_filtered_found=%s" % block_mounts_filtered_found)
+
+
+        filesystem_type_found = set()
+        mountpoints_found = set()
+        block_mountpoint_pair = set()
+        for item in block_mounts_filtered_found:
+            #self.log.error("process=%s" % item)
+            mountpoint = json_input[item]["mountpoint"]
+            mountpoints_found.add(mountpoint)
+            filesystem_type = json_input[item]["filesystem"]
+            filesystem_type_found.add(filesystem_type)
+            block_mountpoint_pair.add((item,mountpoint))
+
+        self.log.error("filesystem_type_found=%s" % filesystem_type_found)
+
+        self.log.error("mountpoints_found=%s" % mountpoints_found)
+
+        self.log.error("block_mounts_filtered_found=%s" % block_mounts_filtered_found)
+
+        self.log.error("block_mountpoint_pair=%s" % block_mountpoint_pair)
 
 
 
-        mount_query = session.query(model.Mount)
-        for item in block_query:
-            blocks_known.add(item.devPath)
+        mountpoint_queried = set()
+        mountpoint_query = session.query(model.MountPoint)
+        for item in mountpoint_query:
+            mountpoint_queried.add(item.MountPoint)
+
+        mountpoint_extra = mountpoint_queried.difference(mountpoints_found)
+        mountpoint_missing = mountpoints_found.difference(mountpoint_queried)
+
+        self.log.error("mountpoint_extra=%s" % mountpoint_extra)
+        self.log.error("mountpoint_missing=%s" % mountpoint_missing)
+
+        # update mountpints
+        changed = False
+        for item in mountpoint_extra:
+            foundMp = session.query(model.MountPoint).\
+                filter(model.MountPoint.mountpoint == item)
+            for mp in foundMp:
+                session.delete(mp)
+                changed = True
+        for item in mountpoint_missing:
+            newMp = model.MountPoint()
+            newMp.mountpoint = item
+            session.add(newMp)
+            changed = True
+        if changed:
+            session.commit()
 
 
+        # Delete extra mounts:
+        Changed = False
+        mount_query = session.query(model.Block,model.MountPoint,model.Mount).\
+                filter(model.MountPoint.id == model.Mount.fk_mountpoint).\
+                filter(model.Mount.fk_block == model.Block.id)
+        for item in mount_query:
+            block = item[0]
+            mpount = item[1]
+            mount = item[2]
+            if block.devPath in block_mounts_filtered_found:
+                if mpount.mountpoint in mountpoints_found:
+                    continue
+            session.delete(mount)
+            Changed = True
+        if Changed:
+            session.commit()
 
-
-        self.log.debug("extra=%s" % (extra))
-
-        self.log.debug("missing=%s" % (missing))
-
-        self.log.debug("mounted_blocks=%s" % (mounted_blocks))
-
-
-        for item in json_input.keys():
-            self.process_device(
-                session=session,
-                device = item,
-                details = json_input[item]
-                )
+        for item in block_mountpoint_pair:
+            str_device = item[0]
+            str_mountPoint = item[1]
+            self.log.error("adding=%s,%s" % (item))
+            device_query = session.query(model.Block).\
+                filter(model.Block.devPath == str_device)
+            device = device_query.one()
+            mountPoint_query = session.query(model.MountPoint).\
+                filter(model.MountPoint.mountpoint == str_mountPoint)
+            mountPoint = mountPoint_query.one()
+            newMount = model.Mount()
+            newMount.fk_block = device.id
+            newMount.fk_mountpoint = mountPoint.id
+            session.add(newMount)
+            session.commit()
 
 
         output = []
