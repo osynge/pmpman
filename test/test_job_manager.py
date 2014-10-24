@@ -33,7 +33,7 @@ import json
 
 
 import pmpmanager.db_devices as model
-import pmpmanager.initialise_db as  devices
+import pmpmanager.initialise_db as  initialise_db
 import pmpmanager.job_exec as job_exec
 import pmpmanager.job_manage as job_manage
 
@@ -59,7 +59,7 @@ class TestJobRunnerFacard(unittest.TestCase):
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
-        devices.initial_data_add_enumerated(self.SessionFactory())
+        initialise_db.initial_data_add_enumerated(self.SessionFactory())
 
     def test_zzzz(self):
         session = self.SessionFactory()

@@ -389,6 +389,14 @@ class job_exec(object):
         if hasattr(self, '_job_runnerImp'):
             return self._job_runnerImp.run(*args, **kwargs)
 
+    def serialise_dict(self):
+        return []
+
+    def deserialise_dict(self,input_json_str):
+        return True
+
+
+
 
     def save(self, *args, **kwargs):
         #self.log.debug("save")
@@ -396,7 +404,6 @@ class job_exec(object):
         if session == None:
             session = self.session
         if session == None:
-            sdsdfsdfs
             self.log.error("No session set")
             raise InputError("No session set")
 
@@ -446,29 +453,6 @@ class job_exec(object):
         if uuid_job_def == None:
             self.log.error("No uuid_job_def set")
             raise InputError("No uuid_job_def set")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # Finished input validation
-
-
-
-
-
-
-
 
         query_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_class)

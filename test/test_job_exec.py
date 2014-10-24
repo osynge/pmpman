@@ -118,14 +118,12 @@ class TestJobExec(unittest.TestCase):
 
         session = self.SessionFactory()
         writer = job_exec.job_exec()
-        writer.session = session
         new_uuid1 = str(uuidgen())
         new_uuid2 = str(uuidgen())
         new_uuid3 = str(uuidgen())
         writer.job_class = "lsblk_query"
         writer.cmdln = "lsblk  --output %s  --pairs" % ( ",".join(lsblk_wantedFields) )
         writer.save(
-            session=session,
             uuid_tempate=new_uuid1,
             uuid_execution=new_uuid2,
             cmdln_template=new_uuid3,
@@ -133,11 +131,9 @@ class TestJobExec(unittest.TestCase):
             uuid_job_def="",
             )
         reader = job_exec.job_exec()
-        reader.session = session
         reader.job_class = "lsblk_query"
         reader.cmdln = ""
         reader.save(
-            session=session,
             uuid_tempate=new_uuid1,
             uuid_execution=new_uuid2,
             cmdln_template=new_uuid3,
@@ -145,7 +141,6 @@ class TestJobExec(unittest.TestCase):
             uuid_job_def="",
             )
         new = job_exec.job_exec()
-        reader.session = session
 
 
 if __name__ == "__main__":

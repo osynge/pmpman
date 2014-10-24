@@ -37,11 +37,7 @@ class job_exec(bass_job_exec):
         if session == None:
             self.log.error("run:No session set")
             return False
-
-
-
         self.log.debug("command=%s" % ("dsds"))
-
         processRc,stdout,stderr = self.execuet_cmdln(cmdln = self.cmdln, timeout=10)
         #log.debug("stdout=%s" % (stdout))
         output = {}
@@ -57,9 +53,6 @@ class job_exec(bass_job_exec):
                 continue
             output[parsedKetValue['KNAME']] = parsedKetValue
 
-        #json_line = str(output)
-        #print json_line
-        #parsedJson = json.loads(json_line)
 
         #print json.dumps(output,sort_keys=True, indent=4)
         self.returncode = processRc
@@ -67,9 +60,3 @@ class job_exec(bass_job_exec):
         self.outputjson = json.dumps(output,sort_keys=True, indent=4)
 
         self.triggers = json.dumps(["lsblk_read"],sort_keys=True, indent=4)
-
-        paramters = []
-        #for key in output.keys():
-        #    paramters.append(output[key])
-        self.trig_parameters = json.dumps(paramters,sort_keys=True, indent=4)
-
