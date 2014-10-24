@@ -54,7 +54,7 @@ class job_runner(bass_job_runner):
 
 
 
-    
+
 
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)

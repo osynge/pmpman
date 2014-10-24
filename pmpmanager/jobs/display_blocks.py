@@ -2,7 +2,7 @@
 import pmpmanager.db_devices as model
 
 import logging
-    
+
 import json
 
 from base_calls import job_exec as bass_job_exec
@@ -37,5 +37,5 @@ class job_exec(bass_job_exec):
         for item in instance_query:
             print item.devName
             print item.devPath
-            
+
 

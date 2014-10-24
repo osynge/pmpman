@@ -38,7 +38,7 @@ def runpreloadcommand(cmd,timeout):
 
 def Property(func):
     return property(**func())
-    
+
 
 class job_exec(bass_job_exec):
     def __init__(self):
@@ -54,13 +54,13 @@ class job_exec(bass_job_exec):
 
         def fset(self, value):
             self._session = value
-            
+
         def fdel(self):
             del self._session
         return locals()
-    
+
     def run(self, *args, **kwargs):
-        
+
         self.log.debug("self.job_class=%s" % self.job_class)
         session = kwargs.get('session', None)
         if session == None:
@@ -74,10 +74,10 @@ class job_exec(bass_job_exec):
         if cmdln == None:
             self.log.error("No cmdln set")
             return False
-        
-        
-        
-        
+
+
+
+
         self.log.debug("self.job_class=%s" % self.job_class)
         output = []
         #print self.cmdln
@@ -106,25 +106,25 @@ class job_exec(bass_job_exec):
             'ID_FS_VERSION',
             'ID_INSTANCE',
             'ID_MODEL',
-            'ID_MODEL_ENC', 
-            'ID_MODEL_ID', 
-            'ID_PART_TABLE_TYPE', 
-            'ID_PATH', 
+            'ID_MODEL_ENC',
+            'ID_MODEL_ID',
+            'ID_PART_TABLE_TYPE',
+            'ID_PATH',
             'ID_PATH_TAG',
             'ID_REVISION',
             'ID_SERIAL',
-            'ID_SERIAL_SHORT', 
-            'ID_TYPE', 
-            'ID_USB_DRIVER', 
+            'ID_SERIAL_SHORT',
+            'ID_TYPE',
+            'ID_USB_DRIVER',
             'ID_USB_INTERFACES',
             'ID_USB_INTERFACE_NUM',
-            'ID_VENDOR', 
+            'ID_VENDOR',
             'ID_VENDOR_ENC',
             'ID_VENDOR_ID',
-            'MAJOR', 
-            'MINOR', 
-            'SUBSYSTEM', 
-            'TAGS', 
+            'MAJOR',
+            'MINOR',
+            'SUBSYSTEM',
+            'TAGS',
             'UDISKS_PRESENTATION_NOPOLICY',
             'USEC_INITIALIZED',
             'UDISKS_PARTITION_SCHEME',
@@ -158,4 +158,4 @@ class job_exec(bass_job_exec):
 
     def cmdln_gen(self,paramters):
         return string.Template(self.cmdln_template).substitute()
-    
+

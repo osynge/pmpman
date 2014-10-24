@@ -22,7 +22,7 @@ class job_exec(bass_job_exec):
 
 
 
-    
+
 
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)
@@ -33,9 +33,9 @@ class job_exec(bass_job_exec):
             return False
 
         self.log.debug("command=%s" % ("dsds"))
-        
+
         output = {}
-        
+
         fp = open("/etc/mtab")
         for line in fp.read().split('\n'):
             line_split = line.split(' ')
@@ -53,9 +53,9 @@ class job_exec(bass_job_exec):
                 if len(tail) == 0:
                     tail = 1
                 optin_dict[head] = tail
-            
-            
-            
+
+
+
             line_dict = {
                     "device" : device,
                     "mountpoint" : mountpoint,
@@ -63,11 +63,11 @@ class job_exec(bass_job_exec):
                     "options" : optin_dict,
                 }
             output[device] = line_dict
-            
-            
+
+
         self.returncode = 0
         self.stdout = ""
         self.outputjson = json.dumps(output,sort_keys=True, indent=4)
 
-        
-        
+
+

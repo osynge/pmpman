@@ -57,7 +57,7 @@ class job_def(Base):
     cmdln_paramters = Column(String(1024),unique=False)
     latest = Column(Integer,nullable = True)
     reocuring = Column(Integer,nullable = False)
-    uuid_job_def = Column(String(30),unique=True, nullable = False)
+    uuid_job_def = Column(String(40),unique=True, nullable = False)
     lifetime = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
         latest = kwargs.get('latest', None)
@@ -86,7 +86,7 @@ class job_execution(Base):
     fk_update = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     fk_state = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     cmdln = Column(String(1024),unique=False,nullable = True)
-    uuid_job_execution = Column(String(30),unique=True,nullable = False)
+    uuid_job_execution = Column(String(40),unique=True,nullable = False)
 
 
     returncode = Column(Integer,nullable = True)
@@ -308,38 +308,86 @@ class BlockUpdateLsblk(Base):
     def __repr__(self):
         return "<BlockUpdateLsblk('%s','%s')>" % (self.fk_block, self.created)
 
-
-
-
-
-class FilesystemType(Base):
-    __tablename__ = 'FilesystemType'
+class FileSystemType(Base):
+    __tablename__ = 'FileSystemType'
     id = Column(Integer, primary_key=True)
     fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    name = Column(String(64),nullable = True,unique=True)
-    key = Column(String(200),nullable = False)
-    value = Column(String(200),nullable = False)
+    name_FileSystemType = Column(String(64),nullable = True,unique=True)
+
+    def __init__(self, *args, **kwargs):
+        fk_block = kwargs.get('fk_block', None)
+        if fk_block != None:
+           self.fk_block = uuid.uuid()
+        name_FileSystemType = kwargs.get('name_FileSystemType', None)
+        if name_FileSystemType != None:
+           self.name_FileSystemType = uuid.uuid()
+
+
+    def __repr__(self):
+        return "<FileSystemType('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
+
+
+class FileSystem(Base):
+    __tablename__ = 'FileSystem'
+    id = Column(Integer, primary_key=True)
+    fk_fs_type = Column(Integer, ForeignKey(FileSystemType.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fs_uuid = Column(String(40),unique=True,nullable = False)
+    fs_label = Column(String(40),nullable = True)
+    fs_uuid_enc = Column(String(40),unique=True,nullable = False)
+    fs_label_enc = Column(String(40),nullable = True)
+
     # explicit/composite unique constraint.  'name' is optional.
     UniqueConstraint('fkEndorser', 'key')
-    def __init__(self,imagelist,key,value):
+    def __init__(self, *args, **kwargs):
+        fk_fs_type = kwargs.get('fk_fs_type', None)
+        if fk_fs_type != None:
+           self.fk_fs_type = uuid.uuid()
+        fs_uuid = kwargs.get('fs_uuid', None)
+        if fs_uuid != None:
+           self.fs_uuid = uuid.uuid()
+
+    def __repr__(self):
+        return "<Filesystem('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
+
+
+class MountPoint(Base):
+    __tablename__ = 'MountPoint'
+    id = Column(Integer, primary_key=True)
+    mountpoint = Column(String(512),nullable = True,unique=True)
+    def __init__(self, *args, **kwargs):
         self.fkEndorser = imagelist
         self.key = key
         self.value = value
     def __repr__(self):
-        return "<FilesystemType('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+        return "<MountPoint('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
 
 
 
-class Filesystem(Base):
-    __tablename__ = 'Filesystem'
+class Mount(Base):
+    __tablename__ = 'Mount'
     id = Column(Integer, primary_key=True)
-    id_fs_type = Column(Integer, ForeignKey(FilesystemType.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_mountpoint = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    fk_filesystem = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
+    def __init__(self, *args, **kwargs):
+        self.fkEndorser = imagelist
+        self.key = key
+        self.value = value
+    def __repr__(self):
+        return "<Mount('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
+class FileStore(Base):
+    __tablename__ = 'FileStore'
+    id = Column(Integer, primary_key=True)
+    id_fs_type = Column(Integer, ForeignKey(FileSystemType.id, onupdate="CASCADE", ondelete="CASCADE"))
     mountpoint = Column(String(512),nullable = True,unique=True)
     key = Column(String(200),nullable = False)
     value = Column(String(200),nullable = False)
     # explicit/composite unique constraint.  'name' is optional.
     UniqueConstraint('fkEndorser', 'key')
-    def __init__(self,imagelist,key,value):
+    def __init__(self, *args, **kwargs):
         self.fkEndorser = imagelist
         self.key = key
         self.value = value
@@ -348,21 +396,7 @@ class Filesystem(Base):
 
 
 
-class Mount(Base):
-    __tablename__ = 'Mount'
-    id = Column(Integer, primary_key=True)
-    fk_block = Column(Integer, ForeignKey(Block.id, onupdate="CASCADE", ondelete="CASCADE"))
-    mountpoint = Column(String(512),nullable = True,unique=True)
-    key = Column(String(200),nullable = False)
-    value = Column(String(200),nullable = False)
-    # explicit/composite unique constraint.  'name' is optional.
-    UniqueConstraint('fkEndorser', 'key')
-    def __init__(self,imagelist,key,value):
-        self.fkEndorser = imagelist
-        self.key = key
-        self.value = value
-    def __repr__(self):
-        return "<Mount('%s','%s', '%s')>" % (self.fkEndorser, self.key, self.value)
+
 
 
 class ManagedFiles(Base):
@@ -374,7 +408,7 @@ class ManagedFiles(Base):
     value = Column(String(200),nullable = False)
     # explicit/composite unique constraint.  'name' is optional.
     UniqueConstraint('fkEndorser', 'key')
-    def __init__(self,imagelist,key,value):
+    def __init__(self, *args, **kwargs):
         self.fkEndorser = imagelist
         self.key = key
         self.value = value

@@ -2,7 +2,7 @@
 
 
 import logging
-    
+
 import json
 
 from base_calls import job_runner as bass_job_runner
@@ -10,7 +10,7 @@ from base_calls import job_runner as bass_job_runner
 
 def Property(func):
     return property(**func())
-    
+
 
 class job_runner(bass_job_runner):
     def __init__(self):
@@ -28,12 +28,12 @@ class job_runner(bass_job_runner):
 
         def fset(self, value):
             self._session = value
-            
+
         def fdel(self):
             del self._session
         return locals()
-    
-    
+
+
     def run(self, *args, **kwargs):
         self.log.debug("self.job_class=%s" % (self.job_class))
         self.triggers = json.dumps([],sort_keys=True, indent=4)
@@ -44,5 +44,5 @@ class job_runner(bass_job_runner):
             return
         session.query()
 
-        
-        
+
+

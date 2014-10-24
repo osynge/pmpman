@@ -110,14 +110,14 @@ class job_exec(bass_job_exec):
                 blockinDb.devicenodes_minor = found_MIN
                 changed = True
                 self.log.info("Updating device '%s' devicenodes_minor with:%s" % (device,found_MIN))
-        
+
         if found_RM != None:
             if blockinDb.device_removable != found_RM:
                 blockinDb.device_removable = found_RM
                 changed = True
                 self.log.info("Updating device '%s' devicenodes_minor with:%s" % (device,found_RM))
-        
-        
+
+
         if changed:
             session.add(blockinDb)
             session.commit()
@@ -155,13 +155,31 @@ class job_exec(bass_job_exec):
 
         json_input = json.loads(self.inputjson)
         print self.inputjson
-        found = set()
+        mounts_found = set()
         for item in json_input.keys():
-            found.add(item)
-        
-        instance_query = session.query(model.Filesystem).\
-            filter(model.Block.devPath == devPath)
-        
+            mounts_found.add(item)
+
+        blocks_known = set()
+        block_query = session.query(model.Block)
+        for item in block_query:
+            blocks_known.add(item.devPath)
+        extra = mounts_found.difference(blocks_known)
+        missing = blocks_known.difference(mounts_found)
+        mounted_blocks = blocks_known.intersection(mounts_found)
+
+
+        for block in mounted_blocks:
+            pass
+
+
+
+        self.log.debug("extra=%s" % (extra))
+
+        self.log.debug("missing=%s" % (missing))
+
+        self.log.debug("mounted_blocks=%s" % (mounted_blocks))
+
+
         for item in json_input.keys():
             self.process_device(
                 session=session,

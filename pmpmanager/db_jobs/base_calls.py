@@ -112,9 +112,9 @@ class job_runner(object):
         if uuid_job_def == None:
             self.log.error("No uuid_def set")
             return False
-        
-        
-        
+
+
+
         job_class = kwargs.get('job_class', None)
         if job_class == None:
            job_class = self.job_class

@@ -8,4 +8,4 @@ class job_runner(bass_job_runner):
         self.log = logging.getLogger("job_runner.udev_read")
     def run(self, *args, **kwargs):
         pass
-    
+

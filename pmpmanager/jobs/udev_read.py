@@ -2,7 +2,7 @@
 import pmpmanager.db_devices as model
 
 import logging
-    
+
 import json
 
 from base_calls import job_exec as bass_job_exec
@@ -17,8 +17,8 @@ class job_exec(bass_job_exec):
 
 
 
-    
-    
+
+
     def run(self, *args, **kwargs):
         self.log.debug("self.job_class=%s" % (self.job_class))
         session = kwargs.get('session', None)
@@ -33,7 +33,7 @@ class job_exec(bass_job_exec):
         if inputjson == None:
             self.log.error("No inputjson set")
             return False
-        keys_required = set([            
+        keys_required = set([
             "DEVLINKS",
             "DEVNAME",
             "DEVPATH",
@@ -81,6 +81,14 @@ class job_exec(bass_job_exec):
         known_keys = keys_optional.union(keys_required)
         input_dict = json.loads(inputjson)
         device = input_dict.get("DEVNAME")
+
+
+        self.log.error("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID")))
+        self.log.error("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL")))
+        self.log.error("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID_ENC")))
+        self.log.error("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL_ENC")))
+
+
         if input_dict.get("DEVNAME") == None:
             self.log.error("Missing:%s" % (device))
             return False
@@ -94,7 +102,7 @@ class job_exec(bass_job_exec):
         if len(missing) > 0:
             self.log.error("Missing expected keys")
             return False
-        
+
         # Update the database
         instance_query = session.query(model.Block).\
             filter(model.Block.devPath == input_dict.get("DEVNAME"))
@@ -106,14 +114,14 @@ class job_exec(bass_job_exec):
             session.commit()
             instance_query = session.query(model.Block).\
                 filter(model.Block.devPath == device)
-        
+
         #populateDB
-        
+
         blockinDb = instance_query.one()
         changed = False
-        
+
         # Do required items.
-        
+
         if input_dict.get("MAJOR") != None:
             if blockinDb.devicenodes_major != input_dict.get("MAJOR"):
                 blockinDb.devicenodes_major = input_dict.get("MAJOR")
@@ -124,18 +132,48 @@ class job_exec(bass_job_exec):
                 blockinDb.devicenodes_minor = input_dict.get("MINOR")
                 changed = True
                 self.log.info("Updating device '%s' devicenodes_minor with:%s" % (device,input_dict.get("MINOR")))
-        
-        # Do optional items.
-        
-        
-        
-        
         if changed:
             session.add(blockinDb)
             session.commit()
-        
+
+        # Do optional items.
+        if input_dict.get("ID_FS_TYPE") != None:
+            FileSystemType_query = session.query(model.FileSystemType).\
+                filter(model.FileSystemType.name_FileSystemType == input_dict.get("ID_FS_TYPE"))
+            if FileSystemType_query.count() == 0:
+                new_type = model.FileSystemType()
+                new_type.name_FileSystemType = input_dict.get("ID_FS_TYPE")
+                session.add(new_type)
+                session.commit()
+        if input_dict.get("ID_FS_UUID") != None:
+            FileSystem_query = session.query(model.FileSystem).\
+                filter(model.FileSystemType.name_FileSystemType == input_dict.get("ID_FS_TYPE")).\
+                filter(model.FileSystemType.id == model.FileSystem.fk_fs_type).\
+                filter(model.FileSystem.fs_uuid == input_dict.get("ID_FS_UUID"))
+
+            if (FileSystem_query.count() == 0):
+                FileSystemType_query = session.query(model.FileSystemType).\
+                    filter(model.FileSystemType.name_FileSystemType == input_dict.get("ID_FS_TYPE"))
+                FileSystemType = FileSystemType_query.one()
+                new_type = model.FileSystem()
+                new_type.fk_fs_type = FileSystemType.id
+                new_type.fs_uuid = input_dict.get("ID_FS_UUID")
+                new_type.fs_uuid_enc = input_dict.get("ID_FS_UUID_ENC")
+                new_type.fs_label = input_dict.get("ID_FS_LABEL")
+                new_type.fs_label_enc = input_dict.get("ID_FS_LABEL_ENC")
+                session.add(new_type)
+                session.commit()
+                FileSystem_query = session.query(model.FileSystem).\
+                    filter(model.FileSystemType.name_FileSystemType == input_dict.get("ID_FS_TYPE")).\
+                    filter(model.FileSystemType.id == model.FileSystem.fk_fs_type).\
+                    filter(model.FileSystem.fs_uuid == input_dict.get("ID_FS_UUID"))
+            FileSystem = FileSystem_query.one()
+
+
+
+
         showlist = foundkeys.intersection(keys_optional)
-        
+
         #for item in showlist:
         #    self.log.debug("input_dict:%s=%s" % (item, input_dict[item]))
-        
+

@@ -105,15 +105,15 @@ class job_exec(object):
         if job_class == None:
             self.log.error("No job_class set")
             return False
-            
+
         uuid_tempate = kwargs.get('uuid_tempate', None)
         if uuid_tempate == None:
            uuid_tempate = self.uuid_tempate
         if uuid_tempate == None:
             self.log.error("No uuid_tempate set")
             return False
-        
-        
+
+
         # Now the ones we dont need
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
@@ -141,7 +141,7 @@ class job_exec(object):
         if query_job_def.count() == 0:
             self.log.error("Not found")
             job_def = model.job_def()
-            
+
             job_def.fk_type = job_namespace.id
             job_def.cmdln_template = self.cmdln_template
             job_def.uuid = uuid_execution
@@ -152,7 +152,7 @@ class job_exec(object):
             self.log.error("ssssssssssstgggsssSSS")
         if (query_job_def.count() == 0):
             self.log.error("ssssssssssssssSSS")
-            
+
         job_def = query_job_def.one()
         job_def.cmdln_template = self.cmdln_template
         job_def.cmdln_paramters = self.cmdln_paramters

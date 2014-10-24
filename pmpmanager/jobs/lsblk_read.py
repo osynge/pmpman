@@ -79,7 +79,6 @@ class job_exec(bass_job_exec):
 
         self.log.info("found_NAME=%s" % (found_NAME))
         self.log.info("found_KNAME=%s" % (found_KNAME))
-
         devPath = "/dev/%s" % found_KNAME
 
         instance_query = session.query(model.Block).\
@@ -110,14 +109,14 @@ class job_exec(bass_job_exec):
                 blockinDb.devicenodes_minor = found_MIN
                 changed = True
                 self.log.info("Updating device '%s' devicenodes_minor with:%s" % (device,found_MIN))
-        
+
         if found_RM != None:
             if blockinDb.device_removable != found_RM:
                 blockinDb.device_removable = found_RM
                 changed = True
                 self.log.info("Updating device '%s' devicenodes_minor with:%s" % (device,found_RM))
-        
-        
+
+
         if changed:
             session.add(blockinDb)
             session.commit()

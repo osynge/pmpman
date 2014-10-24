@@ -28,7 +28,7 @@ class job_exec(bass_job_exec):
 
 
 
-    
+
 
     def run(self, *args, **kwargs):
         session = kwargs.get('session', None)
