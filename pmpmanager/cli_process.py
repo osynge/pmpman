@@ -21,12 +21,12 @@ from sqlalchemy.schema import UniqueConstraint
 
 import db_devices as model
 
-import db_job_queue
+import job_queue_manager
 import pmpmanager.initialise_db as  devices
 
 import pmpmanager.job_manage as job_manage
 
-import db_job_queue
+import job_queue_manager
 import uuid
 from dirty_parser import dirty_parser
 
@@ -80,7 +80,7 @@ class ProcesHandler:
         job_template.run(new_uuid1)
         dirty_parser(session)
         self.log.debug("queue_count=%s" % (job_template.queue_count()))
-        QM = db_job_queue.job_que_man()
+        QM = job_queue_manager.job_que_man()
         QM.session = session
 
         quelength = QM.queue_length(session = session)
@@ -131,7 +131,7 @@ class ProcesHandler:
         newone.enqueue(session = session,uuid_req = uuid.uuid1())
 
 
-        QM = db_job_queue.job_que_man()
+        QM = job_queue_manager.job_que_man()
         QM.session = session
 
         quelength = QM.queue_length(session = session)
@@ -157,7 +157,7 @@ class ProcesHandler:
 
         #self.database.job_def_Run(update_type="lsblk")
         #self.database.job_execution_Run(update_type="lsblk")
-        QM = db_job_queue.job_que_man()
+        QM = job_queue_manager.job_que_man()
         QM.session = session
         session = self.database.Session()
 
