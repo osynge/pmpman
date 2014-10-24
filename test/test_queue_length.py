@@ -45,6 +45,9 @@ from sqlalchemy.orm import aliased
 import pmpmanager.initialise_db as devices
 from uuid import uuid4 as uuidgen
 
+import pmpmanager.db_devices as model
+
+
 class Test_job_manager_can_launch(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobManager")
