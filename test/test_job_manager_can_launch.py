@@ -53,8 +53,8 @@ def debugger(session,uuid_execution):
     query_job_def = session.query(model.job_def).\
                 filter(model.job_execution.uuid_job_execution == uuid_execution).\
                 filter(model.job_def.id == model.job_execution.fk_update)
-    
-    
+
+
     log.debug("ssssssssssssssS")
     for item in query_job_def:
         log.error(item)
@@ -63,15 +63,15 @@ def debugger(session,uuid_execution):
 class Test_job_manager_can_launch(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobManager")
-        
+
         f = tempfile.NamedTemporaryFile(delete=False)
         databaseConnectionString = "sqlite:///%s" % (f.name)
-        
-        
+
+
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
-    
+
     def test_CanLaunch(self):
         session = self.SessionFactory()
         new = job_manage.job_manage()
@@ -87,7 +87,7 @@ class Test_job_manager_can_launch(unittest.TestCase):
                 cmdln_template = "ls",
                 reocuring = 1,
             )
-        
+
         job_detail = new.get_job_def(uuid = new_uuid1)
         job_detail.save()
         queue_count_before = job_detail.queue_count(session= session)
@@ -101,19 +101,19 @@ class Test_job_manager_can_launch(unittest.TestCase):
                 job_class="lsblk_query",
                 cmdln_paramters="",
                 uuid_job_def=new_uuid3,
-                
+
             )
         query_job_namespace = session.query(model.job_execution).all()
         for i in query_job_namespace:
             self.log.error("query_job_namespace=%s" % (item))
         queue_count_after = job_detail.queue_count(session= session)
         self.log.error("%s!=%s" % (queue_count_before,queue_count_after))
-        
+
         self.log.error("job_state=%s" % (job_state))
         query_job_def = session.query(model.job_execution).all()
         for item in query_job_def:
             self.log.error("ssssssssfffssssssS=%s" % (item))
-        
+
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ import pmpmanager.job_manage as job_manage
 
 import db_job_queue
 import uuid
-from dirty_parser import dirty_parser  
+from dirty_parser import dirty_parser
 
 class ProcesHandler:
     def __init__(self,UI = None):
@@ -40,7 +40,8 @@ class ProcesHandler:
 
     def connect_db(self):
         #self.database = devices.database_model(self.UI.defaults['pmpman.rdms'])
-        print self.UI.defaults['pmpman.rdms']
+        #print self.UI.defaults['pmpman.rdms']
+        pass
 
     def cb_pmpman_action_udev(self,caller=None):
         procerss = 'pmpman.action.udev'
@@ -48,7 +49,7 @@ class ProcesHandler:
         #output = json.dumps(imagepub.endorserDump(endorserSub),sort_keys=True, indent=4)
 
         self.connect_db()
-        
+
     def cb_pmpman_action_list(self,caller=None):
         self.log.debug("cb_pmpman_action_list=started")
 
@@ -57,11 +58,11 @@ class ProcesHandler:
         self.SessionFactory = sessionmaker(bind=self.engine)
         session = self.SessionFactory()
         devices.test_CanLaunch(session)
-        
+
         JM = job_manage.job_manage()
         JM.session = session
         job_template = JM.get_job_def(uuid = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3")
-        
+
         new_uuid1 = str(uuid.uuid1())
         new_uuid2 = str(uuid.uuid1())
         new_uuid3 = str(uuid.uuid1())
@@ -73,14 +74,12 @@ class ProcesHandler:
                 reocuring=1,
                 job_class="lsblk_query",
                 cmdln_paramters="",
-                uuid_job_def=new_uuid3                
+                uuid_job_def=new_uuid3
             )
-        
+
         job_template.run(new_uuid1)
         dirty_parser(session)
-        print "queue_count",job_template.queue_count()
-        print dir (job_template)
-        print job_template.show()
+        self.log.debug("queue_count=%s" % (job_template.queue_count()))
         QM = db_job_queue.job_que_man()
         QM.session = session
 
@@ -91,8 +90,8 @@ class ProcesHandler:
             quelength = quelength = QM.queue_length(session = session)
             time.sleep(10)
         self.log.debug("cb_pmpman_action_list")
-        
-        
+
+
     def cb_pmpman_action_list_old(self,caller=None):
         self.log.debug("cb_pmpman_action_list=started")
         self.connect_db()
@@ -124,7 +123,7 @@ class ProcesHandler:
             )
 
         newone.enqueue(session = session,uuid_req = uuid.uuid1())
-        newone.load(session = session, 
+        newone.load(session = session,
             uuid_def = "b9c94c0e-7dc8-4434-9355-e6cb4835fb63",
             uuid_execution = str(uuid.uuid1()),
             uuid_req = str(uuid.uuid1()),
@@ -206,6 +205,7 @@ class ProcesHandler:
             'pmpman.action.block.list' : [ { 'callback' : self.cb_pmpman_block_list } ],
             'pmpman.action.block.scan' : [ { 'callback' : self.cb_pmpman_block_scan } ],
             'pmpman.action.queue.display' : [ { 'callback' : self.cb_pmpman_block_scan } ],
+
 
             }
         self.UI.callbacks_set(parmetes)

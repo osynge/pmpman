@@ -45,25 +45,25 @@ def udevadm_info(device):
 'ID_FS_VERSION',
 'ID_INSTANCE',
 'ID_MODEL',
-'ID_MODEL_ENC', 
-'ID_MODEL_ID', 
-'ID_PART_TABLE_TYPE', 
-'ID_PATH', 
+'ID_MODEL_ENC',
+'ID_MODEL_ID',
+'ID_PART_TABLE_TYPE',
+'ID_PATH',
 'ID_PATH_TAG',
 'ID_REVISION',
 'ID_SERIAL',
-'ID_SERIAL_SHORT', 
-'ID_TYPE', 
-'ID_USB_DRIVER', 
+'ID_SERIAL_SHORT',
+'ID_TYPE',
+'ID_USB_DRIVER',
 'ID_USB_INTERFACES',
 'ID_USB_INTERFACE_NUM',
-'ID_VENDOR', 
+'ID_VENDOR',
 'ID_VENDOR_ENC',
 'ID_VENDOR_ID',
-'MAJOR', 
-'MINOR', 
-'SUBSYSTEM', 
-'TAGS', 
+'MAJOR',
+'MINOR',
+'SUBSYSTEM',
+'TAGS',
 'UDISKS_PRESENTATION_NOPOLICY',
 'USEC_INITIALIZED',
 'UDISKS_PARTITION_SCHEME',
@@ -88,6 +88,6 @@ def udevadm_info(device):
                 log.debug (  line)
                 continue
             gatheredInfomation[keyValue[0]] = keyValue[1]
-        
+
     #log.debug ("doing=%s" % gatheredInfomation)
     return gatheredInfomation

@@ -7,7 +7,7 @@ sys.path = [os.path.abspath(os.path.dirname(os.path.dirname(__file__)))] + sys.p
 import unittest
 import nose
 
-import pmpmanager.job_exec  
+import pmpmanager.job_exec
 
 
 import pmpmanager.initialise_db as devices
@@ -59,13 +59,13 @@ class TestJobExec(unittest.TestCase):
         session = self.SessionFactory()
         #Set up data base
         devices.test_CanLaunch(session)
-        
-        
+
+
     def test_session_set(self):
         session = self.SessionFactory()
         new = job_exec.job_exec(session = session)
         new.session = session
-        
+
         new_uuid1 = str(uuidgen())
         new_uuid2 = str(uuidgen())
         new_uuid3 = str(uuidgen())
@@ -79,8 +79,8 @@ class TestJobExec(unittest.TestCase):
             cmdln_paramters="",
             uuid_job_def="",
             )
-        
-    
+
+
     def test_exec(self):
         session = self.SessionFactory()
         new = job_exec.job_exec()
@@ -89,11 +89,11 @@ class TestJobExec(unittest.TestCase):
         new.cmdln = "lsblk  --output %s  --pairs" % ( ",".join(lsblk_wantedFields) )
         new.run(session = session)
         fred = json.loads(new.outputjson)
-        
+
         self.log.debug(fred)
-        
-    
-    
+
+
+
     def test_save(self):
         session = self.SessionFactory()
         new = job_exec.job_exec()
@@ -113,9 +113,9 @@ class TestJobExec(unittest.TestCase):
 
             )
         #fred = json.loads(new.outputjson)
-        #self.log.debug(fred) 
+        #self.log.debug(fred)
     def test_lsblk_read(self):
-        
+
         session = self.SessionFactory()
         writer = job_exec.job_exec()
         writer.session = session
@@ -146,7 +146,7 @@ class TestJobExec(unittest.TestCase):
             )
         new = job_exec.job_exec()
         reader.session = session
-        
+
 
 if __name__ == "__main__":
     logging.basicConfig()

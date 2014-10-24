@@ -2,7 +2,7 @@ import logging
 import db_devices as model
 
 def initial_data_add_job_state(session,name):
-    
+
     found = session.query(model.job_state).\
             filter(name == model.job_state.name)
     if found.count() == 0:
@@ -10,10 +10,10 @@ def initial_data_add_job_state(session,name):
         state_new.name = name
         session.add(state_new)
         session.commit()
-    
+
 
 def initial_data_add_job_namespace(session,name):
-    
+
     found = session.query(model.job_namespace).\
             filter(name == model.job_namespace.name)
     if found.count() == 0:
@@ -21,8 +21,8 @@ def initial_data_add_job_namespace(session,name):
         state_new.name = name
         session.add(state_new)
         session.commit()
-    
-    
+
+
 def initial_data_add_enumerated(session):
     for state in [
                     "create",
@@ -38,6 +38,8 @@ def initial_data_add_enumerated(session):
                     "lsblk_read"
                     "udev_query",
                     "udev_read",
+                    "mount_query",
+                    "mount_read",
                 ]:
         initial_data_add_job_namespace(session,job_namespace)
     session.commit()
@@ -51,9 +53,9 @@ def job_runner_initial_data_add(session):
     job_runner_lsblk.uuid_def = "3b201cc5-897c-49c7-87e2-5eaddc31c0c3"
     job_runner_lsblk.name = "lsblk_query"
     job_runner_lsblk.save(session = session)
-    
-    
-    
+
+
+
     job_runner_lsblk_read = db_job_runner.job_runner()
     job_runner_lsblk_read.job_class = "lsblk_read"
     job_runner_lsblk_read.uuid_def = "6d7141d5-e1ee-4ff6-a778-10803521c8a2"
@@ -73,17 +75,17 @@ def job_runner_initial_data_add(session):
     job_runner_udev_read.save(session = session)
 
     session.commit()
-    
-    
+
+
     job_runner_lsblk_read.subscribe_add(job_runner_lsblk.uuid_def)
     job_runner_lsblk_read.save(session = session)
     job_runner_udev_query.subscribe_add(job_runner_lsblk_read.uuid_def)
     job_runner_udev_query.save(session = session)
     job_runner_udev_read.subscribe_add(job_runner_udev_query.uuid_def)
     job_runner_udev_read.save(session = session)
-    
+
     session.commit()
-    
+
     job_runner_lsblk.enqueue(session = session)
     session.commit()
 
@@ -97,7 +99,7 @@ def test_CanLaunch(session):
     new.create_job_class(name = "lsblk_read")
     new.create_job_class(name = "udev_query")
     new.create_job_class(name = "udev_read")
-    
+
     new.create_job_def(
             uuid="3b201cc5-897c-49c7-87e2-5eaddc31c0c3",
             job_class = "lsblk_query",
@@ -137,4 +139,4 @@ def test_CanLaunch(session):
             uuid_job_def="c297b566-089d-4895-a8c2-a9cc37767174",
 
         )
-    
+

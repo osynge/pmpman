@@ -4,12 +4,10 @@ import os
 import optparse
 from pmpmanager.__version__ import version as pmpman_version
 import json
-import devices
+
 import lsblk
 import time
-import db_job_queue
-import db_job_runner
-# shoudl not be in this function
+
 import pmpmanager.db_devices as model
 if __name__ == "__main__":
     main()
@@ -20,7 +18,7 @@ import uuid
 
 import pmpmanager.initialise_db as  devices
 
-from cli_process import ProcesHandler 
+from cli_process import ProcesHandler
 
 class CliInput:
     def __init__(self):
@@ -135,10 +133,13 @@ def get_parrameters_cli_init(defaults):
     p.add_option('-q', '--quiet', action ='count',help='Change global log level, decreasing log output.', metavar='LOGFILE')
     p.add_option('-C', '--config-file', action ='store',help='Configuration file.', metavar='CFG_FILE')
     p.add_option('--mark-udev', action ='store',help='Called by udev $name')
+    p.add_option('--add-filestore', action ='store_true',help='List all known instalations')
     p.add_option('--list-partitions', action ='store_true',help='Called by udev $name')
+    p.add_option('--list-filestore', action ='store_true',help='List all known instalations')
     p.add_option('--block-list', action ='store_true',help='Scan All Partitions')
     p.add_option('--block-scan', action ='store_true',help='Scan All Partitions')
     p.add_option('--queue-display', action ='store_true',help='Scan All Partitions')
+
 
 
     actions = set()
@@ -190,18 +191,23 @@ def get_parrameters_cli_init(defaults):
         actions.add('pmpman.action.udev')
         output["pmpman.udev.partition"] = options.mark_udev
 
+    if options.add_filestore:
+        actions.add('pmpman.action.filestore.add')
+
     if options.list_partitions:
         actions.add('pmpman.action.partition.list')
 
 
     if options.block_list:
         actions.add('pmpman.action.block.list')
+    if options.list_filestore:
+        actions.add('pmpman.action.filestore.list')
 
     if options.block_scan:
         actions.add('pmpman.action.block.scan')
     if options.queue_display:
         actions.add('pmpman.action.queue.display')
-        
+
     output["pmpman.cli.actions"] = actions
 
     if options.database:

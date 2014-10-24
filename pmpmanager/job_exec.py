@@ -25,7 +25,8 @@ import jobs.lsblk_read as job_runner_lsblk_read
 import jobs.udev_query as job_runner_udev_query
 import jobs.udev_read as job_runner_udev_read
 import jobs.no_ops as job_runner_no_ops
-
+import jobs.mount_query as job_runner_mount_query
+import jobs.mount_read as job_runner_mount_read
 import db_devices as model
 
 
@@ -48,6 +49,8 @@ class job_exec(object):
             "lsblk" : job_runner_lsblk_query,
             "udev_read" : job_runner_udev_read,
             "lsblk_read" : job_runner_lsblk_read,
+            "mount_query" : job_runner_mount_query,
+            "mount_read" : job_runner_mount_read,
             }
         self.subscribe_list = set([])
         self.publish_list = set([])
@@ -65,8 +68,8 @@ class job_exec(object):
             #    if name == self._job_class:
             #        self.log.debug("dont replay")
             #        return
-            
-            
+
+
             if name == None:
 
                 raise InputError("None is an invalid value")
@@ -75,9 +78,9 @@ class job_exec(object):
             except pmpmanager.db_job_runner.InputError, E:
                 print E.msg
                 pass
-            
 
-                
+
+
             self.log.debug("set job_class:'%s'" % (name))
             if name == None:
                 raise InputError("Cant be set to None")
@@ -90,7 +93,7 @@ class job_exec(object):
                 raise InputError(msg)
 
 
-            
+
             tmpJobRnner = self.job_classes[name].job_exec()
             tmpJobRnner.job_class = name
             tmpJobRnner.session = self.session
@@ -353,15 +356,15 @@ class job_exec(object):
         if session == None:
             self.log.error("enqueue:No session set")
             return False
-        
+
         cmdln_paramters = kwargs.get('cmdln_paramters', None)
         if cmdln_paramters == None:
            cmdln_paramters = cmdln_paramters
         if cmdln_paramters == None:
             self.log.error("No cmdln_paramters set")
             raise InputError("No cmdln_paramters set")
-        
-        
+
+
         uuid_job = kwargs.get('uuid', None)
         if uuid_job == None:
             uuid_job = str(uuid.uuid1())
@@ -377,7 +380,7 @@ class job_exec(object):
         # Now save queued request
         enqueue_job_runner.save(session = session,
             )
-        
+
         session.commit()
 
         return True
@@ -386,7 +389,7 @@ class job_exec(object):
         if hasattr(self, '_job_runnerImp'):
             return self._job_runnerImp.run(*args, **kwargs)
 
-        
+
     def save(self, *args, **kwargs):
         #self.log.debug("save")
         session = kwargs.get('session', None)
@@ -403,14 +406,14 @@ class job_exec(object):
         if job_class == None:
             self.log.error("No job_class set")
             raise InputError("No job_class set")
-            
+
         uuid_tempate = kwargs.get('uuid_tempate', None)
         if uuid_tempate == None:
             uuid_tempate = self.uuid_tempate
         if uuid_tempate == None:
             self.log.error("No uuid_tempate set")
             raise InputError("No uuid_tempate set")
-        
+
         cmdln_template = kwargs.get('cmdln_template', None)
         if cmdln_template == None:
             if hasattr(self, 'cmdln_template'):
@@ -418,15 +421,15 @@ class job_exec(object):
         if cmdln_template == None:
             self.log.error("No cmdln_template set")
             raise InputError("No cmdln_template set")
-        
+
         cmdln_paramters = kwargs.get('cmdln_paramters', None)
         if cmdln_paramters == None:
            cmdln_paramters = cmdln_paramters
         if cmdln_paramters == None:
             self.log.error("No cmdln_paramters set")
             raise InputError("No cmdln_paramters set")
-        
-        
+
+
         # Now the ones we dont need
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
@@ -434,8 +437,8 @@ class job_exec(object):
         if uuid_execution == None:
             self.log.error("No uuid_execution set")
             raise InputError("No uuid_execution set")
-        
-        
+
+
         uuid_job_def = kwargs.get('uuid_job_def', None)
         if uuid_job_def == None:
             if hasattr(self, 'uuid_job_def'):
@@ -443,30 +446,30 @@ class job_exec(object):
         if uuid_job_def == None:
             self.log.error("No uuid_job_def set")
             raise InputError("No uuid_job_def set")
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # Finished input validation
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
         query_job_namespace = session.query(model.job_namespace).\
                 filter(model.job_namespace.name == job_class)
         if query_job_namespace.count() == 0:
@@ -491,7 +494,7 @@ class job_exec(object):
             session.commit()
             query_job_def = session.query(model.job_def).\
                 filter(model.job_def.uuid_job_def == uuid_execution)
-            
+
         job_def = query_job_def.one()
         job_def.cmdln_template = cmdln_template
         job_def.cmdln_paramters = cmdln_paramters
@@ -628,15 +631,15 @@ class job_exec(object):
         if uuid_def == None:
             self.log.error("No uuid_def set")
             return False
-        
+
         uuid_req = kwargs.get('uuid_req', None)
         if uuid_req == None:
            uuid_req = self.uuid_req
-           
+
         if uuid_req == None:
             self.log.error("No uuid_req set")
             raise InputError("No uuid_req set")
-            
+
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution

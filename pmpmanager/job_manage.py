@@ -34,7 +34,7 @@ class job_template(object):
 
     def __init__(self):
         self.log = logging.getLogger("job_template")
-        
+
         self.subscribe_list = set([])
         self.publish_list = set([])
     @Property
@@ -83,7 +83,7 @@ class job_template(object):
         def fdel(self):
             del self._session
         return locals()
-   
+
     @Property
     def created():
         doc = "Remote upload prefix"
@@ -247,8 +247,8 @@ class job_template(object):
             del self._reocuring
         return locals()
 
-  
-    
+
+
     @Property
     def uuid_req():
         doc = "Get a persistent UUID for this operation"
@@ -273,7 +273,7 @@ class job_template(object):
         def fdel(self):
             del self._uuid_req
         return locals()
-    
+
     @Property
     def subscribe_list():
         doc = "Get a persistent UUID for this operation"
@@ -327,7 +327,7 @@ class job_template(object):
         return locals()
 
 
-    
+
     def subscribe_add(self, subscribe_uuid, **kwargs):
         old_subscribe = self.subscribe_list
         old_subscribe.add(subscribe_uuid)
@@ -357,29 +357,29 @@ class job_template(object):
         if uuid_job == None:
             self.log.error("enqueue:No uuid_job set")
             raise InputError("No uuid_job set")
-        
+
         uuid_job = kwargs.get('uuid_job', None)
         if uuid_job == None:
             self.log.error("enqueue:No uuid_job set")
             raise InputError("No uuid_job set")
-        
+
         job_class = kwargs.get('job_class', None)
         if job_class == None:
             self.log.error("enqueue:No job_class set")
             raise InputError("No job_class set")
-        
+
         cmdln_paramters = kwargs.get('cmdln_paramters', None)
         if cmdln_paramters == None:
             self.log.error("enqueue:No cmdln_paramters set")
             raise InputError("No cmdln_paramters set")
-        
+
         uuid_job_def = kwargs.get('uuid_job_def', None)
         if uuid_job_def == None:
             self.log.error("enqueue:No uuid_job_def set")
             raise InputError("No uuid_job_def set")
-        
-        
-        
+
+
+
         if uuid_job == None:
             uuid_job = str(uuidgen)
         enqueue_job_runner = job_exec.job_exec()
@@ -397,7 +397,7 @@ class job_template(object):
             )
         session.commit()
         return True
-        
+
 
 
     def run(self, *args, **kwargs):
@@ -410,20 +410,20 @@ class job_template(object):
             session = self.session
         if session == None:
             raise InputError("No session set")
-        
+
         workuuid = kwargs.get('uuid', None)
         if workuuid == None:
             workuuid = self.uuid
         if workuuid == None:
             raise InputError("No workuuid set")
-        
+
         query_job_namespace = session.query(model.job_execution).\
                 filter(model.job_execution.fk_update == model.job_def.id).\
                 filter(model.job_execution.uuid_job_execution == workuuid)
         return query_job_namespace.count()
-        
-        
-        
+
+
+
     def save(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -436,15 +436,15 @@ class job_template(object):
            uuid_save = self.uuid
         if uuid_save == None:
             raise InputError("No uuid set")
-        
+
         cmdln_template = kwargs.get('cmdln_template', None)
         if cmdln_template == None:
            cmdln_template = self.cmdln_template
         if cmdln_template == None:
             raise InputError("No cmdln_template set")
-        
-        
-        
+
+
+
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
@@ -459,7 +459,7 @@ class job_template(object):
         if job_class == None:
             self.log.error("No job_class set")
             return False
-        
+
         # Finished input validation
 
         query_job_namespace = session.query(model.job_namespace).\
@@ -512,8 +512,8 @@ class job_template(object):
 
         for item in query_subscribers:
             subscribers_found.add(item.uuid_job_def)
-        
-        
+
+
         query_publishers = session.query(source_job.uuid_job_def).\
                 filter(dest_job.uuid_job_def == uuid_save).\
                 filter(model.job_triggers.dest == dest_job.id).\
@@ -555,8 +555,8 @@ class job_template(object):
         self.log.debug("publishers_extra=%s" % (publishers_extra))
 
 
-            
-        
+
+
     def load(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -569,8 +569,8 @@ class job_template(object):
            uuid = self.uuid
         if uuid == None:
             raise InputError("No uuid set")
-        
-        
+
+
         query_job_def = session.query(model.job_def).\
                 filter(model.job_def.uuid_job_def == uuid)
         if query_job_def.count() == 0:
@@ -586,7 +586,7 @@ class job_template(object):
             raise InputError("failed to find job_namespace")
         job_namespace = query_job_namespace.one()
         job_def = query_job_def.one()
-        
+
         self.uuid_def = job_def.uuid_job_def
         self.job_class = job_namespace.name
 
@@ -602,7 +602,7 @@ class job_template(object):
         for item in query_subscribers:
             set_subscribers.add(str(item.uuid_job_def))
         self.subscribe_list = set(set_subscribers)
-        
+
         set_publishers = set()
         query_publishers = session.query(model.job_def).\
                 filter(model.job_def.uuid_job_def == uuid).\
@@ -610,9 +610,9 @@ class job_template(object):
         for item in query_publishers:
             set_publishers.add(str(item.uuid_job_def))
         self.publish_list = set(set_publishers)
-        
-        
-        
+
+
+
     def show(self):
 
         output = {
@@ -635,8 +635,8 @@ class job_manage(object):
         self.log = logging.getLogger("job_manage")
         self.subscribe_list = set([])
         self.publish_list = set([])
-    
-    
+
+
     def list_job_class(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -648,7 +648,7 @@ class job_manage(object):
         query_job_execution = session.query(model.job_namespace)
         output = []
         for query_job_execution in query_job_execution:
-            
+
             output.append(query_job_execution.name)
         return output
 
@@ -663,11 +663,11 @@ class job_manage(object):
         query_job_execution = session.query(model.job_def)
         output = []
         for query_job_execution in query_job_execution:
-            
+
             output.append(query_job_execution.uuid_job_def)
         return output
-    
-    
+
+
     def list_job_exec(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -676,7 +676,7 @@ class job_manage(object):
             self.log.error("load:No session set")
             return False
         output = None
-        
+
         #query_job_state = session.query(model.job_execution,model.job_def,model.job_state,model.job_class).\
         #        filter(model.job_execution.uuid == uuid_execution).\
         #        filter(model.job_def.uuid == uuid_def).\
@@ -686,7 +686,7 @@ class job_manage(object):
         query_job_execution = session.query(model.job_execution)
         output = []
         for query_job_execution in query_job_execution:
-            
+
             output.append(query_job_execution.uuid)
         return output
 
@@ -701,13 +701,13 @@ class job_manage(object):
         if job_def_uuid == None:
             self.log.error("show_job_def:No uuid set")
             return False
-        
-        
-        
-        
+
+
+
+
         query_job_execution = session.query(model.job_def).\
-            filter(model.job_def.uuid == job_def_uuid)  
-            
+            filter(model.job_def.uuid == job_def_uuid)
+
         output = []
         for query_job_execution in query_job_execution:
             job_tmp = job_template()
@@ -716,7 +716,7 @@ class job_manage(object):
             job_tmp.load(session = session)
             output.append(job_tmp.show())
         return output
-    
+
     def get_job_def(self, *args, **kwargs):
         session = kwargs.get('session', None)
         if session == None:
@@ -724,20 +724,20 @@ class job_manage(object):
         if session == None:
             self.log.error("enqueue:No session set")
             raise InputError("No session set")
-        
-        
+
+
         job_def_uuid_alt_01 = kwargs.get('uuid', None)
         job_def_uuid_alt_02 = kwargs.get('uuid_job_def', None)
         job_def_uuid = job_def_uuid_alt_01
         if job_def_uuid_alt_02 != None:
             job_def_uuid = job_def_uuid_alt_02
-        
+
         if job_def_uuid == None:
             raise InputError("show_job_def:No uuid_job_def set")
         job_tmp = job_template()
         job_tmp.session = session
         job_tmp.uuid = job_def_uuid
-        job_tmp.load(session = session)   
+        job_tmp.load(session = session)
         return job_tmp
 
 
@@ -748,44 +748,44 @@ class job_manage(object):
         if session == None:
             self.log.error("No session set")
             raise InputError("No session set")
-            
-            
-        
+
+
+
         job_def_uuid = kwargs.get('uuid', None)
         if job_def_uuid == None:
             raise InputError("No uuid set")
         job_class = kwargs.get('job_class', None)
         if job_class == None:
             raise InputError("No job_class set")
-        
-        
+
+
         cmdln_template = kwargs.get('cmdln_template', None)
         if cmdln_template == None:
             raise InputError("No cmdln_template set")
         reocuring = kwargs.get('reocuring', None)
         if reocuring == None:
             raise InputError("No reocuring set")
-        
-        
+
+
         query_job_class = session.query(model.job_namespace).\
             filter(model.job_namespace.name == job_class).\
             count()
         if query_job_class == 0:
             raise InputError("Invalid job_class set")
-        
+
         query_job_class = session.query(model.job_def).\
             filter(model.job_def.uuid_job_def == job_def_uuid).\
             count()
         if query_job_class != 0:
-            return True 
-        
+            return True
+
         job_tmp = job_template()
         job_tmp.session = session
         job_tmp.uuid = job_def_uuid
         job_tmp.job_class = job_class
         job_tmp.cmdln_template = cmdln_template
         job_tmp.reocuring = reocuring
-        job_tmp.save(session = session)   
+        job_tmp.save(session = session)
         return True
     def create_job_class(self, *args, **kwargs):
         session = kwargs.get('session', None)
@@ -794,13 +794,13 @@ class job_manage(object):
         if session == None:
             self.log.error("No session set")
             return False
-            
+
         name = kwargs.get('name', None)
         if name == None:
             raise InputError("No name set")
-        
-            
-        
+
+
+
         output = None
         query_job_execution = session.query(model.job_namespace).\
             filter(model.job_namespace.name == name).count()

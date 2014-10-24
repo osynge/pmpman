@@ -28,14 +28,14 @@ import logging
 class TestJobRunnerFacard(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobRunnerFacard")
-        
+
         f = tempfile.NamedTemporaryFile(delete=False)
         databaseConnectionString = "sqlite:///%s" % (f.name)
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
-        
-        
+
+
     def test_session_set(self):
         session = self.SessionFactory()
         new = job_runner()
@@ -52,14 +52,14 @@ class TestJobRunnerFacard(unittest.TestCase):
         except InputError:
             raised_exception += 1
         self.assertTrue(raised_exception == 1)
-        
-        
+
+
     def test_job_class_set(self):
         new = job_runner()
         new.job_class = "no_ops"
         new.job_class = "lsblk_query"
         new.job_class = "lsblk_read"
-        
+
         for allowed_class in [ "no_ops","kname_new", "udev_query" , "lsblk_query" , "lsblk" , "udev_read" ,"lsblk_read" ]:
             self.log.debug(allowed_class)
             new.job_class = allowed_class

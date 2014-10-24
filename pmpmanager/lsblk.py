@@ -37,7 +37,7 @@ def runpreloadcommand(cmd,timeout):
 
 def lsblk():
     log = logging.getLogger("lsblk")
-    
+
     wantedFields = ["NAME","KNAME","MOUNTPOINT","PARTUUID","SERIAL","FSTYPE","RM","SIZE","FSTYPE","UUID","OWNER","GROUP","MODE","WWN","VENDOR","MAJ:MIN"]
     lkfields = ",".join(wantedFields)
     command = "lsblk  --output %s  --pairs" % (lkfields)
@@ -52,15 +52,15 @@ def lsblk():
             if len(key_value_list) != 2:
                 continue
             parsedKetValue[str(key_value_list[0])] = str(key_value_list[1]).strip('"')
-        
+
         if not 'KNAME' in parsedKetValue.keys():
             continue
         output[parsedKetValue['KNAME']] = parsedKetValue
-   
+
     #json_line = str(output)
     #print json_line
     #parsedJson = json.loads(json_line)
-    
+
     #print json.dumps(output,sort_keys=True, indent=4)
     return output
 
@@ -80,7 +80,7 @@ def updatdatabase(session=None):
         blocks_known.add(block.devName)
     blockdevices = lsblk()
     blockfound = set(blockdevices.keys())
-    
+
     blocks_discoverd = blockfound.difference(blocks_known)
     blocks_lost = blocks_known.difference(blockfound)
     id_update_type = None
@@ -99,7 +99,7 @@ def updatdatabase(session=None):
             id_update_type = int(find_existing.first().id)
         else:
             id_update_type = int(find_existing.first().id)
-            
+
         find_existing = session.query(model.job_def).\
             filter(model.job_def.fk_type == id_update_type)
         if find_existing.count() == 0:
@@ -123,7 +123,7 @@ def updatdatabase(session=None):
             newjob_def.uuid = str(uuid.uuid1())
             session.add(newjob_def)
             session.commit()
-            
+
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
@@ -131,7 +131,7 @@ def updatdatabase(session=None):
             filter("lsblk" == model.job_namespace.name).\
             filter(model.job_execution.fk_update == model.job_namespace.id)
         for i in find_existing:
-            log.debug("i=%s"  % (i))            
+            log.debug("i=%s"  % (i))
         #log.debug("device_details=%s"  % (device_details))
         device_details = blockdevices[device_key]
         devName = device_details.get("KNAME")
@@ -162,7 +162,7 @@ def updatdatabase(session=None):
                 ).\
             filter(model.job_def.fk_type ==model.job_namespace.id).\
             filter(model.job_namespace.name == "kname_new")
-        if find_existing.count() == 0:        
+        if find_existing.count() == 0:
             index = None
             find_type = session.query(model.job_namespace,
                     ).\
@@ -184,18 +184,18 @@ def updatdatabase(session=None):
         find_existing = session.query(model.job_def,
                 ).\
             filter(model.job_def.fk_type ==model.job_namespace.id).\
-            filter(model.job_namespace.name == "kname_new")   
-        
-            
+            filter(model.job_namespace.name == "kname_new")
+
+
     for device_key in blocks_discoverd:
         find_existing = session.query(model.job_execution).\
             filter(model.Block.devName == device_key).\
             filter(model.job_def.fk_type == model.job_namespace.id).\
             filter("lsblk" == model.job_namespace.name).\
             filter(model.job_execution.fk_update == model.job_namespace.id)
-        
+
     for device_key in blocks_lost:
         log.warning('Code not complete')
-    
+
     return blockdevices
 

@@ -37,7 +37,7 @@ import db_job_queue
 
 
 from uuid import uuid1 as uuidgen
-    
+
 
 class database_model:
     def __init__(self,databaseConnectionString):

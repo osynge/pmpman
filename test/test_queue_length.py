@@ -32,8 +32,6 @@ import os
 import json
 
 
-import pmpmanager.db_devices as model
-import pmpmanager.devices as  devices
 import pmpmanager.job_exec as job_exec
 import pmpmanager.job_manage as job_manage
 
@@ -42,9 +40,7 @@ import logging
 import uuid
 
 import tempfile
-
 import pmpmanager.db_job_queue as db_job_queue
-
 from sqlalchemy.orm import aliased
 import pmpmanager.initialise_db as devices
 from uuid import uuid4 as uuidgen
@@ -52,11 +48,11 @@ from uuid import uuid4 as uuidgen
 class Test_job_manager_can_launch(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobManager")
-        
+
         f = tempfile.NamedTemporaryFile(delete=False)
         databaseConnectionString = "sqlite:///%s" % (f.name)
-        
-        
+
+
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
@@ -69,7 +65,7 @@ class Test_job_manager_can_launch(unittest.TestCase):
         self.jobmanager_uuid1 = str(uuidgen())
         self.jobmanager_uuid2 = str(uuidgen())
         self.jobmanager_uuid3 = str(uuidgen())
-        
+
         rc1 = jobmanager.create_job_def(
                 uuid=self.jobmanager_uuid1,
                 job_class = "lsblk_read",
@@ -86,35 +82,35 @@ class Test_job_manager_can_launch(unittest.TestCase):
             uuid = self.jobmanager_uuid1,
             session =session,
             )
-        
+
         job_details2 = jobmanager.get_job_def(
             uuid = self.jobmanager_uuid1,
             session =session,
             )
-        
+
         job_details1.save()
         job_details2.save()
-        
+
     def test_setup_ok(self):
         session = self.SessionFactory()
         instance_query = session.query(model.job_def)
         self.assertTrue(1 < instance_query.count())
-        
-        
+
+
     def test_winglele(self):
         session = self.SessionFactory()
         instance_query = session.query(model.job_def)
         self.assertTrue(0 < instance_query.count())
         instance_query = session.query(model.job_execution)
         self.assertTrue(0 == instance_query.count())
-        
+
         for item in instance_query:
             self.log.warning("item=%s" % (item.uuid_job_def))
-            item.uuid_job_def ==  self.jobmanager_uuid1 
+            item.uuid_job_def ==  self.jobmanager_uuid1
             self.log.error(item.uuid_job_def)
             self.log.error(self.jobmanager_uuid1)
-            
-            
+
+
     def test_CanLaunch(self):
         session = self.SessionFactory()
         QM = db_job_queue.job_que_man()
@@ -125,7 +121,7 @@ class Test_job_manager_can_launch(unittest.TestCase):
             output = QM.queue_dequeue(session = session)
             quelength = quelength = QM.queue_length(session = session)
             time.sleep(10)
-        
+
 
 if __name__ == "__main__":
     logging.basicConfig()

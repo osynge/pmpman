@@ -26,6 +26,7 @@ import db_jobs.udev_query as job_runner_udev_query
 import db_jobs.udev_read as job_runner_udev_read
 import db_jobs.no_ops as job_runner_no_ops
 
+
 import db_devices as model
 
 
@@ -64,8 +65,8 @@ class job_runner(object):
             #    if name == self._job_class:
             #        self.log.debug("dont replay")
             #        return
-            
-            
+
+
             if name == None:
 
                 raise InputError("None is an invalid value")
@@ -74,9 +75,9 @@ class job_runner(object):
             except pmpmanager.db_job_runner.InputError, E:
                 print E.msg
                 pass
-            
 
-                
+
+
             self.log.debug("set job_class:'%s'" % (name))
             if name == None:
                 raise InputError("Cant be set to None")
@@ -89,7 +90,7 @@ class job_runner(object):
                 raise InputError(msg)
 
 
-            
+
             tmpJobRnner = self.job_classes[name].job_runner()
             tmpJobRnner.job_class = name
             tmpJobRnner.session = self.session
@@ -514,7 +515,7 @@ class job_runner(object):
         def fdel(self):
             del self._publish_list
         return locals()
-    
+
     @Property
     def uuid_req():
         doc = "Get a persistent UUID for this operation"
@@ -539,10 +540,10 @@ class job_runner(object):
         def fdel(self):
             del self._uuid_req
         return locals()
-    
-    
-    
-    
+
+
+
+
     def subscribe_add(self, subscribe_uuid, **kwargs):
         old_subscribe = self.subscribe_list
         old_subscribe.add(subscribe_uuid)
@@ -603,15 +604,15 @@ class job_runner(object):
         if uuid_def == None:
             self.log.error("No uuid_def set")
             return False
-        
+
         uuid_req = kwargs.get('uuid_req', None)
         if uuid_req == None:
            uuid_req = self.uuid_req
-           
+
         if uuid_req == None:
             self.log.error("No uuid_req set")
             raise InputError("No uuid_req set")
-            
+
         uuid_execution = kwargs.get('uuid_execution', None)
         if uuid_execution == None:
            uuid_execution = self.uuid_execution

@@ -29,7 +29,7 @@ class job_namespace(Base):
     __tablename__ = 'job_type'
     id = Column(Integer, primary_key=True)
     name = Column(String(1024),nullable = False,unique=True)
-    
+
     def __init__(self, *args, **kwargs):
         name = kwargs.get('name', None)
         if name != None:
@@ -44,7 +44,7 @@ class job_state(Base):
         name = kwargs.get('name', None)
         if name != None:
            self.name = name
-        
+
 
 
 
@@ -68,7 +68,7 @@ class job_def(Base):
             self.reocuring = reocuring
         else:
             self.reocuring = 0
-        
+
         cmdln_template = kwargs.get('cmdln_template', None)
         if cmdln_template != None:
             self.cmdln_template = cmdln_template
@@ -77,7 +77,7 @@ class job_def(Base):
             self.cmdln_paramters = cmdln_paramters
 
 
-        
+
 class job_execution(Base):
     """stores job runs.
     """
@@ -87,8 +87,8 @@ class job_execution(Base):
     fk_state = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     cmdln = Column(String(1024),unique=False,nullable = True)
     uuid_job_execution = Column(String(30),unique=True,nullable = False)
-    
-    
+
+
     returncode = Column(Integer,nullable = True)
     outputjson = Column(String(1024))
     created = Column(DateTime,nullable = False)
@@ -130,14 +130,14 @@ class job_execution(Base):
         self.trig_parameters = kwargs.get('trig_parameters', "[]")
         this_uuid_opt_01 = kwargs.get('uuid', None)
         this_uuid_opt_02 = kwargs.get('uuid_job_execution', None)
-        
+
         # pick best default
-        
+
         this_uuid = this_uuid_opt_01
         if this_uuid_opt_02 != None:
             this_uuid = this_uuid_opt_02
-            
-            
+
+
         if this_uuid == None:
             self.uuid = str(uuid.uuid4())
         else:
@@ -152,7 +152,7 @@ class job_triggers(Base):
     sk_uuid = Column(String(30),unique=False,nullable = False)
     source = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     dest = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
-    
+
     def __init__(self, *args, **kwargs):
         sk_uuid = kwargs.get('sk_uuid', None)
         if sk_uuid != None:
@@ -163,11 +163,11 @@ class job_triggers(Base):
         dest = kwargs.get('dest', None)
         if dest != None:
            self.dest = dest
-        
 
 
 
-        
+
+
 class Block(Base):
     __tablename__ = 'Block'
     id = Column(Integer, primary_key=True)
@@ -175,9 +175,9 @@ class Block(Base):
     devicenodes_major = Column(String(10),nullable = True)
     devicenodes_minor = Column(String(10),nullable = True)
     device_removable = Column(Integer,nullable = True)
-    
+
     def __init__(self, *args, **kwargs):
-        
+
         idVendor = kwargs.get('idVendor', None)
         if idVendor != None:
            self.idVendor = uuid.uuid()
@@ -194,30 +194,26 @@ class Block(Base):
         device_removable = kwargs.get('device_removable', None)
         if device_removable != None:
            self.device_removable = device_removable
-        
-        
+
+
     def __repr__(self):
         return "<Block('%s')>" % (self.devPath)
 
 
 
-        
+
 class BlockUpdateUdev(Base):
     __tablename__ = 'BlockUpdateUdev'
     id = Column(Integer, primary_key=True)
-    
+    fk_block = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+
     created = Column(DateTime,nullable = False)
-    
-    devName= Column(String(100),nullable = False,unique=True)
-    devPath = Column(String(255),nullable = False,unique=True)
-    
-    
-    
+
     devicenodes_major = Column(String(10),nullable = True)
     devicenodes_minor = Column(String(10),nullable = True)
     device_removable = Column(Integer,nullable = True)
-    
-    
+
+
     udev_id_vendor = Column(String(100),unique=False)
     udev_id_vendor_id = Column(String(100),unique=False)
     udev_id_vendor_enc = Column(String(100),unique=False)
@@ -240,7 +236,7 @@ class BlockUpdateUdev(Base):
     udev_id_udiscs_partiton_size = Column(Integer,nullable = True)
 
     def __init__(self, *args, **kwargs):
-        
+
         idVendor = kwargs.get('idVendor', None)
         if idVendor != None:
            self.idVendor = uuid.uuid()
@@ -257,31 +253,24 @@ class BlockUpdateUdev(Base):
         device_removable = kwargs.get('device_removable', None)
         if device_removable != None:
            self.device_removable = device_removable
-        
-        
+
+
     def __repr__(self):
         return "<BlockUpdateUdev('%s')>" % (self.devPath)
 
 
 
-        
+
 class BlockUpdateLsblk(Base):
     __tablename__ = 'BlockUpdateLsblk'
     id = Column(Integer, primary_key=True)
-    devName= Column(String(100),nullable = False,unique=True)
-    devPath = Column(String(255),nullable = False,unique=True)
-    
-    
+    fk_block = Column(Integer, ForeignKey(job_def.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
     created = Column(DateTime,nullable = False)
-    
-    
+
     devicenodes_major = Column(String(10),nullable = True)
     devicenodes_minor = Column(String(10),nullable = True)
     device_removable = Column(Integer,nullable = True)
-    
-    
 
-    
     lsblk_fstype = Column(Integer,nullable = True)
     lsblk_group = Column(Integer,nullable = True)
     lsblk_mode = Column(Integer,nullable = True)
@@ -297,7 +286,7 @@ class BlockUpdateLsblk(Base):
     lsblk_vendor = Column(Integer,nullable = True)
     lsblk_wwn = Column(Integer,nullable = True)
     def __init__(self, *args, **kwargs):
-        
+
         idVendor = kwargs.get('idVendor', None)
         if idVendor != None:
            self.idVendor = uuid.uuid()
@@ -314,10 +303,10 @@ class BlockUpdateLsblk(Base):
         device_removable = kwargs.get('device_removable', None)
         if device_removable != None:
            self.device_removable = device_removable
-        
-        
+
+
     def __repr__(self):
-        return "<Block('%s')>" % (self.devPath)
+        return "<BlockUpdateLsblk('%s','%s')>" % (self.fk_block, self.created)
 
 
 

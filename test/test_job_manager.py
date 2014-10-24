@@ -51,23 +51,23 @@ from sqlalchemy.orm import aliased
 class TestJobRunnerFacard(unittest.TestCase):
     def setUp(self):
         self.log = logging.getLogger("TestJobManager")
-        
+
         f = tempfile.NamedTemporaryFile(delete=False)
         databaseConnectionString = "sqlite:///%s" % (f.name)
-        
-        
+
+
         self.engine = create_engine(databaseConnectionString, echo=False)
         model.init(self.engine)
         self.SessionFactory = sessionmaker(bind=self.engine)
         devices.initial_data_add_enumerated(self.SessionFactory())
-     
+
     def test_zzzz(self):
         session = self.SessionFactory()
         new = job_manage.job_manage()
         new.session = session
         self.log.error(new.list_job_class())
         self.log.error(new.list_job_def())
-    
+
     def test_exec(self):
         session = self.SessionFactory()
         new = job_manage.job_manage()
@@ -80,16 +80,16 @@ class TestJobRunnerFacard(unittest.TestCase):
                 cmdln_template = "ls",
                 reocuring = 1,
             )
-        
+
         jobtmplate = new.get_job_def(uuid=new_uuid)
         self.assertTrue(jobtmplate != None)
         jobtmplate.run()
         self.log.error(jobtmplate.subscribe_list)
-        
 
-        
-    
-    
+
+
+
+
 
     def test_showjobs(self):
         session = self.SessionFactory()
@@ -100,15 +100,15 @@ class TestJobRunnerFacard(unittest.TestCase):
             #self.log.debug("jobid=%s" % (item))
             job_details = new.show_job_def(uuid = item)
             #self.log.error("job_details=%s" % (job_details))
-    
-            
+
+
     def test_create_job_def(self):
         session = self.SessionFactory()
         new = job_manage.job_manage()
-        
-        
-        
-        
+
+
+
+
         new.session = session
         new.create_job_class(name = "lsblk_query")
         new_uuid = str(uuid.uuid1())
@@ -124,8 +124,8 @@ class TestJobRunnerFacard(unittest.TestCase):
 
 
 
-    
-        
+
+
 
     def test_job_def_save_retrive_subscribe_list(self):
         session = self.SessionFactory()
@@ -134,7 +134,7 @@ class TestJobRunnerFacard(unittest.TestCase):
         new.create_job_class(name = "lsblk_query")
         new_uuid1 = str(uuid.uuid1())
         new_uuid2 = str(uuid.uuid1())
-        
+
         new.create_job_def(
                 uuid=new_uuid1,
                 job_class = "lsblk_query",
@@ -153,26 +153,26 @@ class TestJobRunnerFacard(unittest.TestCase):
         self.assertTrue(len(job_details2.publish_list) == 0)
         job_details1.publish_list = set([new_uuid2])
         job_details1.subscribe_list = set([new_uuid2])
-        
+
         self.assertTrue(len(job_details1.subscribe_list) == 1)
         job_details1.save()
         self.assertTrue(len(job_details1.subscribe_list) == 1)
         job_details2.save()
         self.assertTrue(len(job_details1.subscribe_list) == 1)
-        
+
         #source_job = aliased(model.job_def, name='source_job')
         #dest_job = aliased(model.job_def, name='dest_job')
-        
+
         #query_subscribers = session.query(dest_job).\
         #        filter(source_job.uuid == new_uuid2).\
         #        filter(model.job_triggers.dest == dest_job.id).\
         #        filter(model.job_triggers.source == source_job.id)
-        
+
         #self.log.warning("c1=%s" % (query_subscribers.count()))
         #for item in query_subscribers:
         #    self.log.warning("item=%s" % (item))
-        
-        
+
+
         #query_publishers = session.query(source_job).\
         #        filter(source_job.uuid == new_uuid2).\
         #        filter(model.job_triggers.dest == dest_job.id).\
@@ -181,8 +181,8 @@ class TestJobRunnerFacard(unittest.TestCase):
         #self.log.warning("c2=%s" % (query_publishers.count()))
         #for item in query_publishers:
         #    self.log.warning("item=%s" % (item))
-        
-        
+
+
         job_details1.load()
         self.assertTrue(len(job_details1.subscribe_list) == 1)
         job_details2.load()
@@ -190,7 +190,7 @@ class TestJobRunnerFacard(unittest.TestCase):
         self.assertTrue(len(job_details1.publish_list) == 1)
         self.assertTrue(len(job_details2.subscribe_list) == 1)
         self.assertTrue(len(job_details2.publish_list) == 1)
-        
+
 
 
 
