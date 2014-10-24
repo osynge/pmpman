@@ -33,7 +33,7 @@ setup(name='pmpman',
     author_email="osynge@suse.com",
     license='The MIT License (MIT)',
     url = 'https://github.com/hepix-virtualisation/pmpman',
-    packages = ['pmpmanager', 'pmpmanager/db_jobs/'],
+    packages = ['pmpmanager', 'pmpmanager/db_jobs/', 'pmpmanager/jobs/'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
