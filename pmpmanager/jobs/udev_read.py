@@ -83,10 +83,10 @@ class job_exec(bass_job_exec):
         device = input_dict.get("DEVNAME")
 
 
-        self.log.error("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID")))
-        self.log.error("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL")))
-        self.log.error("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID_ENC")))
-        self.log.error("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL_ENC")))
+        #self.log.debug("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID")))
+        #self.log.debug("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL")))
+        #self.log.debug("ID_FS_UUID=%s" % (input_dict.get("ID_FS_UUID_ENC")))
+        #self.log.debug("ID_FS_LABEL=%s" % (input_dict.get("ID_FS_LABEL_ENC")))
 
 
         if input_dict.get("DEVNAME") == None:

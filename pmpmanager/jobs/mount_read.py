@@ -146,6 +146,7 @@ class job_exec(bass_job_exec):
 
 
     def run(self, *args, **kwargs):
+        self.log = logging.getLogger("job_exec.mount_read")
         session = kwargs.get('session', None)
         if session == None:
             session = self.session
@@ -154,10 +155,25 @@ class job_exec(bass_job_exec):
             return False
 
         json_input = json.loads(self.inputjson)
-        print self.inputjson
+
         mounts_found = set()
+        mounts_queried = set()
+
+        mounts_known = set()
         for item in json_input.keys():
+            self.log.error("item=%s" % item)
             mounts_found.add(item)
+
+
+        mount_query = session.query(model.Mount)
+        for item in mount_query:
+            mounts_queried.add(item.devPath)
+        self.log.debug("mounts_queried=%s" % mounts_queried)
+        self.log.debug("mounts_found=%s" % mounts_found)
+        mounts_extra = mounts_queried.difference(mounts_found)
+        mounts_missing = mounts_found.difference(mounts_queried)
+        self.log.debug("mounts_extra=%s" % mounts_extra)
+        self.log.debug("mounts_missing=%s" % mounts_missing)
 
         blocks_known = set()
         block_query = session.query(model.Block)
@@ -168,8 +184,11 @@ class job_exec(bass_job_exec):
         mounted_blocks = blocks_known.intersection(mounts_found)
 
 
-        for block in mounted_blocks:
-            pass
+
+        mount_query = session.query(model.Mount)
+        for item in block_query:
+            blocks_known.add(item.devPath)
+
 
 
 
