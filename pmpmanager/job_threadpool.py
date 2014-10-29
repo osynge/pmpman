@@ -6,8 +6,6 @@ import logging
 from Queue import Queue, Empty
 import exceptions
 
-from sqtray.models import Observable
-
 import sys
 import time
 

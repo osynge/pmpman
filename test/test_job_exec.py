@@ -129,6 +129,7 @@ class TestJobExec(unittest.TestCase):
             cmdln_template=new_uuid3,
             cmdln_paramters="",
             uuid_job_def="",
+            session=session,
             )
         reader = job_exec.job_exec()
         reader.job_class = "lsblk_query"
@@ -139,6 +140,7 @@ class TestJobExec(unittest.TestCase):
             cmdln_template=new_uuid3,
             cmdln_paramters="",
             uuid_job_def="",
+            session=session,
             )
         new = job_exec.job_exec()
 
