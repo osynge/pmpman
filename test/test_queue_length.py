@@ -40,7 +40,7 @@ import logging
 import uuid
 
 import tempfile
-import pmpmanager.db_job_queue as db_job_queue
+import pmpmanager.job_queue_manager as db_job_queue
 from sqlalchemy.orm import aliased
 import pmpmanager.initialise_db as devices
 from uuid import uuid4 as uuidgen
