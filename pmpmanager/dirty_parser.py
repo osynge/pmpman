@@ -8,8 +8,8 @@ from uuid import uuid4 as uuidgen
 import db_devices as model
 
 
-lsblk_wantedFields = ["NAME","KNAME","MOUNTPOINT","PARTUUID","SERIAL","FSTYPE","RM","SIZE","FSTYPE","UUID","OWNER","GROUP","MODE","WWN","VENDOR","MAJ:MIN"]
-
+lsblk_wantedFields_suse = ["NAME","KNAME","MOUNTPOINT","PARTUUID","SERIAL","FSTYPE","RM","SIZE","FSTYPE","UUID","OWNER","GROUP","MODE","WWN","VENDOR","MAJ:MIN"]
+lsblk_wantedFields = ["NAME", "KNAME", "MOUNTPOINT", "FSTYPE", "RM", "SIZE", "FSTYPE", "UUID", "OWNER", "GROUP", "MODE","MAJ:MIN"]
 
 def init_blockdevice_scan(session):
     log = logging.getLogger("init_blockdevice_scan")
@@ -32,7 +32,6 @@ def init_blockdevice_scan(session):
         uuid_job_def="",
         )
     writer.run()
-
     reader = job_exec.job_exec()
 
     reader.session = session
