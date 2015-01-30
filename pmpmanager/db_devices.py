@@ -24,6 +24,32 @@ import uuid
 
 Base = declarative_base()
 
+class client(Base):
+    __tablename__ = 'client'
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(40),nullable = False,unique=True)
+    client_job_latest = Column(Integer,nullable = True)
+    client_sock = Column(String(255),nullable = True ,unique=True)
+    
+    def __init__(self, *args, **kwargs):
+        name = kwargs.get('name', None)
+        pass
+
+
+class client_job(Base):
+    __tablename__ = 'client_job'
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime,nullable = False)
+    expires = Column(DateTime,nullable = False)
+    fk_client = Column(Integer, ForeignKey(client.id, onupdate="CASCADE", ondelete="CASCADE"),nullable = False)
+    uuid = Column(String(40),nullable = False,unique=True)
+    session_id = Column(String(40),unique=True, nullable = False)
+    def __init__(self, *args, **kwargs):
+        name = kwargs.get('name', None)
+        if name != None:
+           self.name = name
+
+
 
 class job_namespace(Base):
     __tablename__ = 'job_type'
