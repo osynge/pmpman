@@ -33,8 +33,7 @@ import datetime
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, Boolean, DateTime
 import lsblk
 import json
-import db_job_queue
-
+import job_queue_manager
 
 from uuid import uuid1 as uuidgen
 
@@ -49,7 +48,7 @@ class database_model:
             initial_data_add(self.SessionFactory())
 
 
-        inital_quque = db_job_queue.job_que_man()
+        inital_quque = job_queue_manager.job_que_man()
         inital_quque.session = self.SessionFactory()
         queue_length = inital_quque.queue_length()
         while queue_length > 0:
