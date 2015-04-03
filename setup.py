@@ -51,9 +51,11 @@ setup(name='pmpman',
         'coverage >= 3.0',
         'nose >= 1.1.0',
         'mock',
+        'SQLAlchemy >= 0.7.8',
     ],
     setup_requires=[
         'nose',
+        'SQLAlchemy >= 0.7.8',
     ],
     test_suite = 'nose.collector',
     )
